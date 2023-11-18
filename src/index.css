@@ -14,6 +14,15 @@
     -webkit-text-size-adjust: 100%;
 }
 
+@font-face {
+    font-family: 'Futura';
+    src: local('Futura'), url(./fonts/futura.otf) format('otf');
+}
+
+* {
+    font-family: 'Futura';
+}
+
 a {
     font-weight: 500;
     color: #646cff;

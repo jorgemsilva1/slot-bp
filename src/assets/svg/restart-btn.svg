@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 264.01 114.82">
+  <g id="Butoes">
+    <g>
+      <rect x="4" y="3.76" width="256" height="17.1" style="stroke-width: 0px;"/>
+      <rect x="4" y="3.76" width="256" height="90.21" style="fill: #fff; stroke-width: 0px;"/>
+      <rect x="4" y="93.97" width="256" height="17.1" style="fill: #818181; stroke-width: 0px;"/>
+      <path d="m0,0h264.01v97.72H0V0Zm260,93.97V3.76H4v90.21h256" style="stroke-width: 0px;"/>
+      <rect y="97.72" width="264.01" height="17.1" style="stroke-width: 0px;"/>
+      <text transform="translate(23.89 77.18)" style="font-family: FuturaPTCond-Bold, &apos;Futura PT Cond&apos;; font-size: 80px; font-weight: 700;"><tspan x="0" y="0" style="letter-spacing: -.02em;">RES</tspan><tspan x="93.92" y="0" style="letter-spacing: -.03em;">T</tspan><tspan x="118.64" y="0" style="letter-spacing: -.02em;">A</tspan><tspan x="154.24" y="0" style="letter-spacing: -.04em;">R</tspan><tspan x="189.2" y="0" style="letter-spacing: -.02em;">T</tspan></text>
+    </g>
+  </g>
+</svg>

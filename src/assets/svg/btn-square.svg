@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 113.99 114.82">
+  <g id="Butoes">
+    <g>
+      <rect x="4" y="3.76" width="106" height="17.1" style="stroke-width: 0px;"/>
+      <rect x="4" y="93.97" width="106" height="17.1" style="fill: #818181; stroke-width: 0px;"/>
+      <path d="m0,0h113.99v97.72H0V0Zm110,93.97V3.76H4v90.21h106" style="stroke-width: 0px;"/>
+      <rect x="4" y="3.76" width="106" height="90.21" style="fill: #fff; stroke-width: 0px;"/>
+      <rect y="97.72" width="113.99" height="17.1" style="stroke-width: 0px;"/>
+    </g>
+  </g>
+</svg>
