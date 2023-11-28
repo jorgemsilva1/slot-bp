@@ -49,9 +49,18 @@ function getRandomItem(items: any[]) {
 }
 
 type ProbabilityItem = { base_probability: number } & SlotReward;
-export const probabilityCalc = (items: ProbabilityItem[]): SlotReward => {
+export const probabilityCalc = (
+    items: ProbabilityItem[],
+    prizesIndexArr: number[]
+): SlotReward => {
     // Make sure we only use items that have qty
     let filteredItems = items.filter((i) => i.qty > 0);
+
+    if (prizesIndexArr.length > 0) {
+        filteredItems = filteredItems.filter(
+            (i) => i.index !== prizesIndexArr[0]
+        );
+    }
 
     // Calculate total stock and total rarity
     const initialStock = filteredItems.reduce(
@@ -122,4 +131,37 @@ export const configTheme = (
         theme,
         additional_rotations: rotations,
     }));
+};
+
+/** https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array */
+function shuffle(array: any[]) {
+    let currentIndex = array.length,
+        randomIndex;
+
+    // While there remain elements to shuffle.
+    while (currentIndex > 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [array[currentIndex], array[randomIndex]] = [
+            array[randomIndex],
+            array[currentIndex],
+        ];
+    }
+
+    return array;
+}
+
+export const arrayOfProbabilities = (length = 5, minProbability = 50) => {
+    const randomNumbers = Array.from(
+        { length: length - 1 },
+        () => Math.floor(Math.random() * (51 - minProbability)) + minProbability
+    );
+
+    // Add 100 to the array
+    const arrayWith100 = [...randomNumbers, 100];
+
+    return shuffle(arrayWith100);
 };
