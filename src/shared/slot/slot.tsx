@@ -172,7 +172,7 @@ export const Slot = ({
                 // If first prize, add to the array and change probability to a quarter
                 dispatch(
                     setWinPercentage(
-                        contextConfig.value.user_type === 'bacana' ? 35 : 15
+                        contextConfig.value.user_type === 'bacana' ? 15 : 10
                     )
                 );
             } else if (prizes.current.length === 2) {
