@@ -128,10 +128,7 @@ export const Slot = ({
 
     const handleRoll = useCallback(async () => {
         disabled.current = true;
-        const probability =
-            prizes.current.length > 0
-                ? contextConfig.value.win_percentage
-                : probArr.current[myArr.current.length];
+        const probability = probArr.current[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
@@ -168,14 +165,15 @@ export const Slot = ({
 
             prizes.current = [...prizes.current, item.index];
 
-            if (prizes.current.length === 1) {
-                // If first prize, add to the array and change probability to a quarter
-                dispatch(
-                    setWinPercentage(
-                        contextConfig.value.user_type === 'bacana' ? 20 : 15
-                    )
-                );
-            } else if (prizes.current.length === 2) {
+            // if (prizes.current.length === 1) {
+            //     // If first prize, add to the array and change probability to a quarter
+            //     dispatch(
+            //         setWinPercentage(
+            //             contextConfig.value.user_type === 'bacana' ? 20 : 15
+            //         )
+            //     );
+            // } else
+            if (prizes.current.length === 2) {
                 // If is second prize, finish the game
                 endGame();
             }
@@ -194,7 +192,6 @@ export const Slot = ({
         awards,
         roll,
         onWin,
-        dispatch,
         endGame,
         onLose,
     ]);

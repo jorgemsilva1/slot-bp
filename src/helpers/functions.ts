@@ -155,7 +155,7 @@ function shuffle(array: any[]) {
 }
 
 export const arrayOfProbabilities = (length = 5) => {
-    const isBacanaProb = length === 10 ? 20 : 15;
+    const isBacanaProb = length === 10 ? 25 : 20;
 
     const randomNumbers = Array.from(
         { length: length - 1 },
