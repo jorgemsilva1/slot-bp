@@ -2,7 +2,7 @@ import { StateUpdater } from 'preact/hooks';
 import { SlotConfigType, SlotReward } from '../app';
 
 export const shouldBeTrue = (percentage: number): boolean => {
-    const randomValue = Math.random() * 100;
+    const randomValue = Math.floor(Math.random() * (100 - 1 + 1) + 1);
     return randomValue < percentage;
 };
 

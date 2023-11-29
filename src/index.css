@@ -16,7 +16,7 @@
 
 @font-face {
     font-family: 'Futura';
-    src: local('Futura'), url(./fonts/futura.otf) format('otf');
+    src: local('Futura'), url('../public//fonts/futura.otf') format('otf');
 }
 
 * {

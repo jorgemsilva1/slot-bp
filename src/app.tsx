@@ -42,8 +42,8 @@ export function App() {
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 5,
-        time_per_icon: 100,
+        icon_num: 6,
+        time_per_icon: 80,
         indexes: [0, 0, 0],
         theme: 'soccer',
         reelImg: '/img/reel.png',
