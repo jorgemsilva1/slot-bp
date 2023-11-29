@@ -47,7 +47,7 @@ const BtnWrapper = styled.div`
     position: absolute;
     width: 100%;
     height: 30px;
-    bottom: 22vh;
+    bottom: 25vh;
 
     img {
         width: 40%;

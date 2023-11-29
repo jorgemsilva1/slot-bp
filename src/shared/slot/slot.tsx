@@ -172,7 +172,7 @@ export const Slot = ({
                 // If first prize, add to the array and change probability to a quarter
                 dispatch(
                     setWinPercentage(
-                        contextConfig.value.user_type === 'bacana' ? 15 : 10
+                        contextConfig.value.user_type === 'bacana' ? 20 : 15
                     )
                 );
             } else if (prizes.current.length === 2) {
@@ -244,8 +244,7 @@ export const Slot = ({
         if (contextConfig.value.num_of_plays) {
             setNumberOfPlays(contextConfig.value.num_of_plays);
             probArr.current = arrayOfProbabilities(
-                contextConfig.value.num_of_plays,
-                20
+                contextConfig.value.num_of_plays
             );
         }
     }, [contextConfig.value.num_of_plays]);
@@ -351,7 +350,7 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
         `${_variables.icon_width * (_variables.number_of_reels * 1.04)}px`};
     height: ${({ _variables }) => `${_variables.icon_height * 3}px`};
     padding: ${({ _variables }) => `${_variables.icon_height * 0.05}px`};
-    margin-bottom: 20dvh;
+    margin-bottom: 26dvh;
 
     .reel {
         position: relative;

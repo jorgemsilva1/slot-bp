@@ -27,5 +27,4 @@ const Background = styled.div`
     width: 100%;
     height: 100%;
     background: ${({ bg }) => `url('/img/bg_${bg}.png')`};
-    background-position: 0 3vh;
 `;

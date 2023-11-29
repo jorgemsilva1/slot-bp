@@ -154,10 +154,12 @@ function shuffle(array: any[]) {
     return array;
 }
 
-export const arrayOfProbabilities = (length = 5, minProbability = 50) => {
+export const arrayOfProbabilities = (length = 5) => {
+    const isBacanaProb = length === 10 ? 20 : 15;
+
     const randomNumbers = Array.from(
         { length: length - 1 },
-        () => Math.floor(Math.random() * (51 - minProbability)) + minProbability
+        () => Math.floor(Math.random() * isBacanaProb) + 1
     );
 
     // Add 100 to the array
