@@ -126,23 +126,28 @@ export function App() {
             );
 
             try {
-                // Remove one item from the stock
-                await axios.put(`${CONFIG.apiUrl}/api/awards/${element.id}`, {
-                    data: {
-                        qty: element?.qty - 1,
-                    },
-                });
+                if (element && element.id) {
+                    // Remove one item from the stock
+                    await axios.put(
+                        `${CONFIG.apiUrl}/api/awards/${element.id}`,
+                        {
+                            data: {
+                                qty: element?.qty - 1,
+                            },
+                        }
+                    );
 
-                // Add the play
-                await axios.post(`${CONFIG.apiUrl}/api/plays`, {
-                    data: {
-                        won: true,
-                        won_premium: element?.is_premium_prize,
-                        is_bacana: isBacana,
-                        prize_id: element.id,
-                        config_id: internalConfig.id,
-                    },
-                });
+                    // Add the play
+                    await axios.post(`${CONFIG.apiUrl}/api/plays`, {
+                        data: {
+                            won: true,
+                            won_premium: element?.is_premium_prize,
+                            is_bacana: isBacana,
+                            prize_id: element.id,
+                            config_id: internalConfig.id,
+                        },
+                    });
+                }
                 await fetchData();
             } catch (err) {
                 console.log(err);

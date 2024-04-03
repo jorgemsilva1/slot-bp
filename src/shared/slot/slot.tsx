@@ -15,6 +15,7 @@ import { PrizeList } from './partials/PrizeList';
 import { Controls } from './partials/Controls';
 import { SoundStudio } from './partials/SoundStudio';
 import { BtnToggle } from './partials/BtnToggle';
+import PrizeDesktopBg from '../../assets/svg/prize_desktop.svg';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -49,6 +50,7 @@ export const Slot = ({
     const [numberOfPlays, setNumberOfPlays] = useState(null);
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
+    const [showPrize, setShowPrize] = useState(false);
 
     const prizes = useRef([]);
     const probArr = useRef([]);
@@ -75,6 +77,7 @@ export const Slot = ({
     };
 
     const handleReset = useCallback(() => {
+        setShowPrize(false);
         reelsRef.current
             .filter((el) => Boolean(el))
             .map((reel: HTMLElement) => {
@@ -160,6 +163,8 @@ export const Slot = ({
 
         // Check winning status and define rules
         if (deltas.every((value, _, arr) => arr[0] === value)) {
+            setShowPrize(true);
+
             onWin(deltas[0], contextConfig.value.user_type === 'bacana');
             winSoundRef.current.playSound();
 
@@ -215,6 +220,7 @@ export const Slot = ({
 
     const handleRestart = useCallback(async () => {
         setBg('one');
+        setShowPrize(false);
         clickSoundRef.current.playSound();
         ambienceSoundRef.current.setVolume(0.2);
         await fetchInitialData();
@@ -226,6 +232,14 @@ export const Slot = ({
         setClickedPlay(false);
         setNumberOfPlays(null);
     }, [fetchInitialData]);
+
+    const handleRollClick = useCallback(async () => {
+        if (awards?.length && !disabled.current) {
+            handleReset();
+            disabled.current = true;
+            await handleRoll();
+        }
+    }, [awards?.length, handleReset, handleRoll]);
 
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
@@ -271,10 +285,25 @@ export const Slot = ({
                                     className="reel"
                                 ></span>
                             ))}
-                            {/* <WonPrize>
-                                <p>Martelo Thor</p>
-                            </WonPrize> */}
+
+                            <WonPrize className={showPrize ? '' : 'hide'}>
+                                <img src={PrizeDesktopBg} alt="" />
+                                <span>
+                                    <p className="title">Ganhaste:</p>
+                                    <p>
+                                        {
+                                            myArr.current[
+                                                myArr.current.length - 1
+                                            ]
+                                        }
+                                    </p>
+                                </span>
+                            </WonPrize>
                         </SlotMachine>
+                        <RollBtnWrapper
+                            onClick={handleRollClick}
+                        ></RollBtnWrapper>
+
                         <BtnToggle
                             clickedPlay={clickedPlay}
                             numberOfPlays={numberOfPlays}
@@ -369,18 +398,56 @@ const WonPrize = styled.section`
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #e45525;
-    border: 20px solid #000;
-    max-width: 60%;
+    transition: all 300ms cubic-bezier(0.68, -0.6, 0.32, 1.6);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 890px;
+    filter: drop-shadow(32px 34px 46px rgba(0, 0, 0, 0.3));
     text-wrap: wrap;
     text-align: center;
+    pointer-events: none;
+    opacity: 1;
+
+    &.hide {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(2);
+        transition: all 300ms ease-in-out;
+    }
+
+    img {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translate(-50%);
+        height: 100%;
+        z-index: 0;
+    }
 
     p {
-        color: #ffffff;
+        position: relative;
+        width: 700px;
+        line-height: 160px;
+        color: #fff;
         font-family: 'Futura';
-        font-size: 124px;
+        font-size: 180px;
         font-weight: bold;
         text-transform: uppercase;
-        -webkit-text-stroke: 5px black;
+        margin: 0;
+
+        &.title {
+            font-size: 124px;
+            color: #e45525;
+            margin-top: -60px;
+        }
     }
+`;
+
+const RollBtnWrapper = styled.div`
+    position: absolute;
+    bottom: 380px;
+    left: 0;
+    width: 100%;
+    height: 1230px;
 `;
