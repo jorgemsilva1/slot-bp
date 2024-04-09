@@ -50,6 +50,6 @@ const BtnWrapper = styled.div`
     bottom: 25vh;
 
     img {
-        width: 40%;
+        width: 60%;
     }
 `;

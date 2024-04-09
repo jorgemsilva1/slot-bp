@@ -40,15 +40,15 @@ export function App() {
     const awardsRef = useRef();
     const { config, dispatch } = useConfigContext();
     const [slotConfig] = useState<SlotConfigType>({
-        icon_width: 450 /** 5*/,
-        icon_height: 450 /** 5*/,
-        icon_num: 6,
-        time_per_icon: 80,
+        icon_width: 600 /** 5*/,
+        icon_height: 1679 / 4 /** 5*/,
+        icon_num: 4,
+        time_per_icon: 100,
         indexes: [0, 0, 0],
         theme: 'soccer',
         reelImg: '/img/reel.png',
-        additional_rotations: 2,
-        number_of_reels: 4,
+        additional_rotations: 10,
+        number_of_reels: 3,
     });
 
     const fetchData = useCallback(async () => {

@@ -16,6 +16,7 @@ import { Controls } from './partials/Controls';
 import { SoundStudio } from './partials/SoundStudio';
 import { BtnToggle } from './partials/BtnToggle';
 import PrizeDesktopBg from '../../assets/svg/prize_desktop.svg';
+import { WinnerPrize } from './partials/WinnerPrize';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -44,10 +45,10 @@ export const Slot = ({
     contextConfig.value = _contextConfig;
     const fsHandle = useFullScreenHandle();
     const myArr = useRef([]);
-    const disabled = useRef(true);
+    const disabled = useRef(false);
     const [gameOver, setGameOver] = useState(false);
-    const [clickedPlay, setClickedPlay] = useState(false);
-    const [numberOfPlays, setNumberOfPlays] = useState(null);
+    const [clickedPlay, setClickedPlay] = useState(true);
+    const [numberOfPlays, setNumberOfPlays] = useState(1);
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
     const [showPrize, setShowPrize] = useState(false);
@@ -82,15 +83,15 @@ export const Slot = ({
             .filter((el) => Boolean(el))
             .map((reel: HTMLElement) => {
                 reel.style.transition = `none`;
-                reel.style.backgroundPositionY = `0px`;
+                reel.style.backgroundPositionY = `260px`;
             });
     }, []);
 
     const endGame = useCallback(() => {
         disabled.current = true;
-        prizes.current = [];
+        // prizes.current = [];
         ambienceSoundRef.current.setVolume(0.2);
-        setBg('go');
+        // setBg('go');
         setGameOver(true);
     }, []);
 
@@ -131,7 +132,7 @@ export const Slot = ({
 
     const handleRoll = useCallback(async () => {
         disabled.current = true;
-        const probability = probArr.current[myArr.current.length];
+        const probability = 100 || probArr.current[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
@@ -147,13 +148,34 @@ export const Slot = ({
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
+        console.log('GANHOU: ', winningSymbolIndex);
+        console.log(
+            winningSymbolIndex,
+            winningSymbolIndex + 1 > config.icon_num - 1
+                ? 0
+                : winningSymbolIndex + 1,
+            winningSymbolIndex
+        );
+
         const deltas = await Promise.all(
             reelsRef.current
                 .filter((el) => Boolean(el))
                 .map((reel, index) => {
+                    const indexedSymbol =
+                        winningSymbolIndex === 1
+                            ? winningSymbolIndex + 2
+                            : winningSymbolIndex === 3
+                            ? winningSymbolIndex - 2
+                            : winningSymbolIndex;
+                    const symbolIndex =
+                        index === 1 ? indexedSymbol : winningSymbolIndex;
+
+                    return roll(reel, index, symbolIndex);
                     return roll(reel, index, winningSymbolIndex);
                 })
         );
+
+        console.log(deltas);
 
         myArr.current = [
             ...myArr.current,
@@ -162,8 +184,9 @@ export const Slot = ({
         // console.table(myArr.current);
 
         // Check winning status and define rules
-        if (deltas.every((value, _, arr) => arr[0] === value)) {
-            setShowPrize(true);
+        // if (deltas.every((value, _, arr) => arr[0] === value)) {
+        if (deltas[0] === deltas[2]) {
+            // setShowPrize(true);
 
             onWin(deltas[0], contextConfig.value.user_type === 'bacana');
             winSoundRef.current.playSound();
@@ -192,9 +215,10 @@ export const Slot = ({
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
     }, [
-        contextConfig.value.user_type,
         contextConfig.value.win_percentage,
+        contextConfig.value.user_type,
         awards,
+        config.icon_num,
         roll,
         onWin,
         endGame,
@@ -219,18 +243,19 @@ export const Slot = ({
     }, []);
 
     const handleRestart = useCallback(async () => {
-        setBg('one');
-        setShowPrize(false);
+        // return;
+        // setBg('one');
+        // setShowPrize(false);
         clickSoundRef.current.playSound();
         ambienceSoundRef.current.setVolume(0.2);
         await fetchInitialData();
         myArr.current = [];
-        disabled.current = [];
+        disabled.current = false;
         prizes.current = [];
         reelsRef.current = [];
         setGameOver(false);
-        setClickedPlay(false);
-        setNumberOfPlays(null);
+        // setClickedPlay(false);
+        setNumberOfPlays(1);
     }, [fetchInitialData]);
 
     const handleRollClick = useCallback(async () => {
@@ -270,50 +295,42 @@ export const Slot = ({
         <FullScreen handle={fsHandle}>
             <Container id={gameOver ? 'gameover-container' : ''}>
                 <BgController backgroundId={bg as any} />
-                {!gameOver ? (
-                    <>
-                        <SlotMachine _variables={config}>
-                            {Array.from(
-                                Array(config.number_of_reels).keys()
-                            ).map((index) => (
+                <>
+                    {/* WINNER PRIZE */}
+                    <WinnerPrize gameOver={gameOver} prizes={prizes.current} />
+                    {/* END WINNER PRIZE */}
+                    <SlotMachine _variables={config}>
+                        {Array.from(Array(config.number_of_reels).keys()).map(
+                            (index) => (
                                 <span
                                     key={index}
+                                    data-id={`reel-${index}`}
                                     ref={(element) =>
                                         ((reelsRef.current as any)[index] =
                                             element)
                                     }
                                     className="reel"
                                 ></span>
-                            ))}
+                            )
+                        )}
 
-                            <WonPrize className={showPrize ? '' : 'hide'}>
-                                <img src={PrizeDesktopBg} alt="" />
-                                <span>
-                                    <p className="title">Ganhaste:</p>
-                                    <p>
-                                        {
-                                            myArr.current[
-                                                myArr.current.length - 1
-                                            ]
-                                        }
-                                    </p>
-                                </span>
-                            </WonPrize>
-                        </SlotMachine>
-                        <RollBtnWrapper
-                            onClick={handleRollClick}
-                        ></RollBtnWrapper>
+                        <WonPrize className={showPrize ? '' : 'hide'}>
+                            <img src={PrizeDesktopBg} alt="" />
+                            <span>
+                                <p className="title">Ganhaste:</p>
+                                <p>{myArr.current[myArr.current.length - 1]}</p>
+                            </span>
+                        </WonPrize>
+                    </SlotMachine>
+                    <RollBtnWrapper onClick={handleRollClick}></RollBtnWrapper>
 
-                        <BtnToggle
-                            clickedPlay={clickedPlay}
-                            numberOfPlays={numberOfPlays}
-                            handleClickUserType={handleClickUserType}
-                            handleClickPlay={handlePlay}
-                        />
-                    </>
-                ) : (
-                    <PrizeList arr={myArr.current} />
-                )}
+                    <BtnToggle
+                        clickedPlay={clickedPlay}
+                        numberOfPlays={numberOfPlays}
+                        handleClickUserType={handleClickUserType}
+                        handleClickPlay={handlePlay}
+                    />
+                </>
             </Container>
             <Controls
                 handleRestart={handleRestart}
@@ -374,22 +391,28 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
     justify-content: space-between;
     width: ${({ _variables }) =>
         `${_variables.icon_width * (_variables.number_of_reels * 1.04)}px`};
-    height: ${({ _variables }) => `${_variables.icon_height * 3}px`};
+    height: 1320px;
     padding: ${({ _variables }) => `${_variables.icon_height * 0.05}px`};
-    margin-bottom: 26dvh;
+    margin-bottom: 26.5dvh;
+    margin-left: -20px;
+    overflow: hidden;
 
     .reel {
         position: relative;
         display: inline-block;
         width: ${({ _variables }) => `${_variables.icon_width}px`};
-        height: ${({ _variables }) => `${_variables.icon_height * 3}px`};
+        height: ${({ _variables }) => `${_variables.icon_height * 4}px`};
         border-radius: 2px;
         background-image: ${({ _variables }) => `url(${_variables.reelImg})`};
         background-repeat: repeat-y;
-        background-position-y: 0;
+        background-position-y: 260px;
 
         /** TEMP **/
         background-size: cover;
+
+        &[data-id='reel-1'] {
+            background-image: url('/img/reel_middle.png');
+        }
     }
 `;
 

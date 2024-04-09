@@ -30,7 +30,7 @@ export const SoundStudio = ({
             <SoundManager
                 ref={refs.roll}
                 src="audio/rollete.wav"
-                volume={0.1}
+                volume={0.2}
                 playing
             />
             <SoundManager
