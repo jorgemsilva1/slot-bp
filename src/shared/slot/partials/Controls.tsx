@@ -38,14 +38,14 @@ const Container = styled.section`
     display: flex;
     column-gap: 24px;
     position: absolute;
-    bottom: calc(150px + 2vh);
+    bottom: 40px;
     left: 50%;
     transform: translateX(-50%);
 `;
 
 const AudioBtn = styled.button`
-    width: ${({ width }) => width || '100px'};
-    height: 100px;
+    width: ${({ width }) => width || '40px'};
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,7 +57,7 @@ const AudioBtn = styled.button`
     border: 4px solid black;
 
     p {
-        font-size: 48px;
+        font-size: 24px;
         margin: 0 12px;
     }
 

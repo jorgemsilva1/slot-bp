@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { io } from 'socket.io-client';
 import { Slot } from './shared';
 import { VariablesType } from './shared/slot/slot';
 import axios from 'axios';
@@ -40,16 +41,34 @@ export function App() {
     const awardsRef = useRef();
     const { config, dispatch } = useConfigContext();
     const [slotConfig] = useState<SlotConfigType>({
-        icon_width: 600 /** 5*/,
-        icon_height: 1679 / 4 /** 5*/,
-        icon_num: 4,
-        time_per_icon: 100,
+        icon_width: 203 /** 5*/,
+        icon_height: 203 /** 5*/,
+        icon_num: 16,
+        time_per_icon: 2,
         indexes: [0, 0, 0],
         theme: 'soccer',
         reelImg: '/img/reel.png',
-        additional_rotations: 10,
-        number_of_reels: 3,
+        additional_rotations: 1,
+        number_of_reels: 4,
     });
+
+    const socket = useRef<any>();
+
+    useEffect(() => {
+        socket.current = io(CONFIG.apiUrl);
+
+        socket.current.on('connect', () => {
+            console.log('Connected to server');
+        });
+
+        socket.current.on('disconnect', () => {
+            console.log('Disconnected from server');
+        });
+
+        socket.current.on('connect_error', (error) => {
+            console.error('Connection error:', error);
+        });
+    }, []);
 
     const fetchData = useCallback(async () => {
         const response = await axios.get(
@@ -138,15 +157,18 @@ export function App() {
                     );
 
                     // Add the play
-                    await axios.post(`${CONFIG.apiUrl}/api/plays`, {
+                    const res = await axios.post(`${CONFIG.apiUrl}/api/plays`, {
                         data: {
                             won: true,
                             won_premium: element?.is_premium_prize,
                             is_bacana: isBacana,
                             prize_id: element.id,
                             config_id: internalConfig.id,
+                            player: 1,
                         },
                     });
+                    debugger;
+                    socket.current.emit('prize-won', element.id);
                 }
                 await fetchData();
             } catch (err) {
@@ -167,9 +189,12 @@ export function App() {
                         won_premium: false,
                         is_bacana: isBacana,
                         config_id: internalConfig.id,
+                        player: 1,
                     },
                 });
                 await fetchData();
+
+                socket.current.emit('prize-won', null);
             } catch (err) {
                 console.log(err);
             }
@@ -188,6 +213,7 @@ export function App() {
             config={slotConfig}
             awards={awardsRef.current?.rewards}
             fetchInitialData={fetchInitialData}
+            socket={socket.current}
         />
     );
 }

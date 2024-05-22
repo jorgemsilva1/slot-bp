@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { SlotConfigType, SlotReward } from '../../app';
 import {
     arrayOfProbabilities,
+    checkIfUserCanPlay,
     probabilityCalc,
     shouldBeTrue,
 } from '../../helpers/functions';
@@ -17,6 +18,8 @@ import { SoundStudio } from './partials/SoundStudio';
 import { BtnToggle } from './partials/BtnToggle';
 import PrizeDesktopBg from '../../assets/svg/prize_desktop.svg';
 import { WinnerPrize } from './partials/WinnerPrize';
+import axios from 'axios';
+import { CONFIG } from '../../config/index.';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -39,6 +42,7 @@ export const Slot = ({
     awards,
     onLose,
     fetchInitialData,
+    socket,
 }: SlotProps) => {
     const { config: _contextConfig, dispatch } = useConfigContext();
     const contextConfig = useRef({}).current;
@@ -48,7 +52,7 @@ export const Slot = ({
     const disabled = useRef(false);
     const [gameOver, setGameOver] = useState(false);
     const [clickedPlay, setClickedPlay] = useState(true);
-    const [numberOfPlays, setNumberOfPlays] = useState(1);
+    const [numberOfPlays, setNumberOfPlays] = useState(5);
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
     const [showPrize, setShowPrize] = useState(false);
@@ -83,7 +87,7 @@ export const Slot = ({
             .filter((el) => Boolean(el))
             .map((reel: HTMLElement) => {
                 reel.style.transition = `none`;
-                reel.style.backgroundPositionY = `260px`;
+                reel.style.backgroundPositionY = `0`;
             });
     }, []);
 
@@ -118,7 +122,7 @@ export const Slot = ({
 
             return new Promise((resolve) => {
                 const animationTime =
-                    config.icon_num - 1 + delta * config.time_per_icon;
+                    config.icon_num - 1 + delta * config.time_per_icon * 25;
                 reel.style.transition = `background-position-y ${animationTime}ms`;
                 reel.style.backgroundPositionY = `${targetBackgroundPosition}px`;
 
@@ -131,6 +135,9 @@ export const Slot = ({
     );
 
     const handleRoll = useCallback(async () => {
+        const canPlay = await checkIfUserCanPlay(1);
+        if (!canPlay) return socket.emit('can-play', false);
+
         disabled.current = true;
         const probability = 100 || probArr.current[myArr.current.length];
 
@@ -160,22 +167,8 @@ export const Slot = ({
         const deltas = await Promise.all(
             reelsRef.current
                 .filter((el) => Boolean(el))
-                .map((reel, index) => {
-                    const indexedSymbol =
-                        winningSymbolIndex === 1
-                            ? winningSymbolIndex + 2
-                            : winningSymbolIndex === 3
-                            ? winningSymbolIndex - 2
-                            : winningSymbolIndex;
-                    const symbolIndex =
-                        index === 1 ? indexedSymbol : winningSymbolIndex;
-
-                    return roll(reel, index, symbolIndex);
-                    return roll(reel, index, winningSymbolIndex);
-                })
+                .map((reel, index) => roll(reel, index, winningSymbolIndex))
         );
-
-        console.log(deltas);
 
         myArr.current = [
             ...myArr.current,
@@ -184,8 +177,8 @@ export const Slot = ({
         // console.table(myArr.current);
 
         // Check winning status and define rules
-        // if (deltas.every((value, _, arr) => arr[0] === value)) {
-        if (deltas[0] === deltas[2]) {
+        if (deltas.every((value, _, arr) => arr[0] === value)) {
+            // if (deltas[0] === deltas[2]) {
             // setShowPrize(true);
 
             onWin(deltas[0], contextConfig.value.user_type === 'bacana');
@@ -201,7 +194,7 @@ export const Slot = ({
             //         )
             //     );
             // } else
-            if (prizes.current.length === 2) {
+            if (prizes.current.length === 1) {
                 // If is second prize, finish the game
                 endGame();
             }
@@ -215,6 +208,7 @@ export const Slot = ({
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
     }, [
+        socket,
         contextConfig.value.win_percentage,
         contextConfig.value.user_type,
         awards,
@@ -314,30 +308,32 @@ export const Slot = ({
                             )
                         )}
 
-                        <WonPrize className={showPrize ? '' : 'hide'}>
+                        {/* <WonPrize className={showPrize ? '' : 'hide'}>
                             <img src={PrizeDesktopBg} alt="" />
                             <span>
                                 <p className="title">Ganhaste:</p>
                                 <p>{myArr.current[myArr.current.length - 1]}</p>
                             </span>
-                        </WonPrize>
+                        </WonPrize> */}
+                        <RollBtnWrapper
+                            onClick={handleRollClick}
+                        ></RollBtnWrapper>
                     </SlotMachine>
-                    <RollBtnWrapper onClick={handleRollClick}></RollBtnWrapper>
 
-                    <BtnToggle
+                    {/* <BtnToggle
                         clickedPlay={clickedPlay}
                         numberOfPlays={numberOfPlays}
                         handleClickUserType={handleClickUserType}
                         handleClickPlay={handlePlay}
-                    />
+                    /> */}
                 </>
             </Container>
-            <Controls
+            {/* <Controls
                 handleRestart={handleRestart}
                 fsHandle={fsHandle}
                 handleActivateSound={activateAmbienceSound}
                 hasSound={hasSound}
-            />
+            /> */}
             <SoundStudio
                 refs={{
                     ambience: ambienceSoundRef,
@@ -352,15 +348,6 @@ export const Slot = ({
 };
 
 const Container = styled.main`
-    position: relative;
-    width: 100dvw;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    row-gap: 12px;
-
     &#gameover-container {
         * {
             color: #000;
@@ -386,33 +373,28 @@ const Container = styled.main`
 `;
 
 const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
-    position: relative;
+    position: absolute;
+    top: 0;
     display: flex;
     justify-content: space-between;
     width: ${({ _variables }) =>
         `${_variables.icon_width * (_variables.number_of_reels * 1.04)}px`};
-    height: 1320px;
-    padding: ${({ _variables }) => `${_variables.icon_height * 0.05}px`};
-    margin-bottom: 26.5dvh;
-    margin-left: -20px;
+    height: 606px;
     overflow: hidden;
+    border-radius: 12px;
 
     .reel {
         position: relative;
         display: inline-block;
         width: ${({ _variables }) => `${_variables.icon_width}px`};
-        height: ${({ _variables }) => `${_variables.icon_height * 4}px`};
+        height: ${({ _variables }) => `${_variables.icon_height * 16}px`};
         border-radius: 2px;
         background-image: ${({ _variables }) => `url(${_variables.reelImg})`};
         background-repeat: repeat-y;
-        background-position-y: 260px;
+        // background-position-y: -30px;
 
         /** TEMP **/
         background-size: cover;
-
-        &[data-id='reel-1'] {
-            background-image: url('/img/reel_middle.png');
-        }
     }
 `;
 
@@ -469,8 +451,8 @@ const WonPrize = styled.section`
 
 const RollBtnWrapper = styled.div`
     position: absolute;
-    bottom: 380px;
+    bottom: 40px;
     left: 0;
     width: 100%;
-    height: 1230px;
+    height: 100%;
 `;

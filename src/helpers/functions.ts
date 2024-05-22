@@ -1,5 +1,7 @@
 import { StateUpdater } from 'preact/hooks';
 import { SlotConfigType, SlotReward } from '../app';
+import axios from 'axios';
+import { CONFIG } from '../config/index.';
 
 export const shouldBeTrue = (percentage: number): boolean => {
     const randomValue = Math.floor(Math.random() * (100 - 1 + 1) + 1);
@@ -166,4 +168,18 @@ export const arrayOfProbabilities = (length = 5) => {
     const arrayWith100 = [...randomNumbers, 100];
 
     return shuffle(arrayWith100);
+};
+
+export const checkIfUserCanPlay = async (userId: number) => {
+    if (!userId) throw new Error('Falta o userId');
+
+    const today = new Date();
+    const startDate = new Date(today.setUTCHours(0, 0, 0, 0)).toISOString();
+    const endDate = new Date(today.setUTCHours(23, 59, 59, 999)).toISOString();
+    const { data: res } = await axios.get(
+        `${CONFIG.apiUrl}/api/plays?filters[createdAt][$gte]=${startDate}&filters[createdAt][$lte]=${endDate}&filters[player][id][$eq]=${userId}`
+    );
+
+    if (!res.data || res.data.length >= 5) return false;
+    return true;
 };
