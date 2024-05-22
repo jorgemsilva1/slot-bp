@@ -42,7 +42,6 @@ export const Slot = ({
     awards,
     onLose,
     fetchInitialData,
-    socket,
 }: SlotProps) => {
     const { config: _contextConfig, dispatch } = useConfigContext();
     const contextConfig = useRef({}).current;
@@ -136,7 +135,6 @@ export const Slot = ({
 
     const handleRoll = useCallback(async () => {
         const canPlay = await checkIfUserCanPlay(1);
-        if (!canPlay) return socket.emit('can-play', false);
 
         disabled.current = true;
         const probability = 100 || probArr.current[myArr.current.length];
@@ -154,15 +152,6 @@ export const Slot = ({
         const item = probabilityCalc(awards, prizes.current);
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
-
-        console.log('GANHOU: ', winningSymbolIndex);
-        console.log(
-            winningSymbolIndex,
-            winningSymbolIndex + 1 > config.icon_num - 1
-                ? 0
-                : winningSymbolIndex + 1,
-            winningSymbolIndex
-        );
 
         const deltas = await Promise.all(
             reelsRef.current
@@ -208,7 +197,6 @@ export const Slot = ({
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
     }, [
-        socket,
         contextConfig.value.win_percentage,
         contextConfig.value.user_type,
         awards,

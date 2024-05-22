@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
-import { io } from 'socket.io-client';
 import { Slot } from './shared';
 import { VariablesType } from './shared/slot/slot';
 import axios from 'axios';
 import { CONFIG } from './config/index.';
+
 import {
     resetState,
     setInitialStateData,
@@ -52,23 +52,8 @@ export function App() {
         number_of_reels: 4,
     });
 
-    const socket = useRef<any>();
+        const queryParameters = new URLSearchParams(window.location.search)
 
-    useEffect(() => {
-        socket.current = io(CONFIG.apiUrl);
-
-        socket.current.on('connect', () => {
-            console.log('Connected to server');
-        });
-
-        socket.current.on('disconnect', () => {
-            console.log('Disconnected from server');
-        });
-
-        socket.current.on('connect_error', (error) => {
-            console.error('Connection error:', error);
-        });
-    }, []);
 
     const fetchData = useCallback(async () => {
         const response = await axios.get(
@@ -164,11 +149,9 @@ export function App() {
                             is_bacana: isBacana,
                             prize_id: element.id,
                             config_id: internalConfig.id,
-                            player: 1,
+                            player: queryParameters.get("email"),
                         },
                     });
-                    debugger;
-                    socket.current.emit('prize-won', element.id);
                 }
                 await fetchData();
             } catch (err) {
@@ -189,12 +172,11 @@ export function App() {
                         won_premium: false,
                         is_bacana: isBacana,
                         config_id: internalConfig.id,
-                        player: 1,
+                        player: queryParameters.get("email"),
                     },
                 });
                 await fetchData();
 
-                socket.current.emit('prize-won', null);
             } catch (err) {
                 console.log(err);
             }
@@ -213,7 +195,6 @@ export function App() {
             config={slotConfig}
             awards={awardsRef.current?.rewards}
             fetchInitialData={fetchInitialData}
-            socket={socket.current}
         />
     );
 }
