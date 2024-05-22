@@ -88,6 +88,8 @@ export const probabilityCalc = (
             1000;
     });
 
+    debugger;
+
     const item = getRandomItem(filteredItems);
 
     return item;

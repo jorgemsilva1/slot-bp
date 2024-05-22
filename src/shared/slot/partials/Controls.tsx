@@ -44,8 +44,8 @@ const Container = styled.section`
 `;
 
 const AudioBtn = styled.button`
-    width: ${({ width }) => width || '100px'};
-    height: 100px;
+    width: ${({ width }) => width || '32px'};
+    height: 32px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -57,7 +57,7 @@ const AudioBtn = styled.button`
     border: 4px solid black;
 
     p {
-        font-size: 48px;
+        font-size: 14px;
         margin: 0 12px;
     }
 

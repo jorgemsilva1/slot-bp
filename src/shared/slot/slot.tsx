@@ -83,9 +83,13 @@ export const Slot = ({
             .filter((el) => Boolean(el))
             .map((reel: HTMLElement) => {
                 reel.style.transition = `none`;
-                reel.style.backgroundPositionY = `260px`;
+                reel.style.backgroundPositionY = `${
+                    config.icon_height * 2 +
+                    config.screen_height / 2 -
+                    config.icon_height / 2
+                }px`;
             });
-    }, []);
+    }, [config.icon_height, config.screen_height]);
 
     const endGame = useCallback(() => {
         disabled.current = true;
@@ -149,13 +153,6 @@ export const Slot = ({
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
         console.log('GANHOU: ', winningSymbolIndex);
-        console.log(
-            winningSymbolIndex,
-            winningSymbolIndex + 1 > config.icon_num - 1
-                ? 0
-                : winningSymbolIndex + 1,
-            winningSymbolIndex
-        );
 
         const deltas = await Promise.all(
             reelsRef.current
@@ -170,7 +167,7 @@ export const Slot = ({
                     const symbolIndex =
                         index === 1 ? indexedSymbol : winningSymbolIndex;
 
-                    return roll(reel, index, symbolIndex);
+                    // return roll(reel, index, symbolIndex);
                     return roll(reel, index, winningSymbolIndex);
                 })
         );
@@ -389,30 +386,29 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
     position: relative;
     display: flex;
     justify-content: space-between;
-    width: ${({ _variables }) =>
-        `${_variables.icon_width * (_variables.number_of_reels * 1.04)}px`};
-    height: 1320px;
+    width: ${({ _variables }) => _variables.icon_width};
+    height: 1200px;
     padding: ${({ _variables }) => `${_variables.icon_height * 0.05}px`};
-    margin-bottom: 26.5dvh;
     margin-left: -20px;
     overflow: hidden;
 
     .reel {
         position: relative;
         display: inline-block;
-        width: ${({ _variables }) => `${_variables.icon_width}px`};
-        height: ${({ _variables }) => `${_variables.icon_height * 4}px`};
+        width: 24%;
+        height: ${({ _variables }) => `${_variables.icon_height * 16}px`};
         border-radius: 2px;
         background-image: ${({ _variables }) => `url(${_variables.reelImg})`};
         background-repeat: repeat-y;
-        background-position-y: 260px;
+        background-position-y: ${({ _variables }) =>
+            `${
+                _variables.icon_height * 2 +
+                _variables.screen_height / 2 -
+                _variables.icon_height / 2
+            }px`};
 
         /** TEMP **/
         background-size: cover;
-
-        &[data-id='reel-1'] {
-            background-image: url('/img/reel_middle.png');
-        }
     }
 `;
 

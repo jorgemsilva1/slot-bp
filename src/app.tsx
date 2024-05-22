@@ -39,17 +39,45 @@ export type SlotReward = {
 export function App() {
     const awardsRef = useRef();
     const { config, dispatch } = useConfigContext();
-    const [slotConfig] = useState<SlotConfigType>({
-        icon_width: 600 /** 5*/,
-        icon_height: 1679 / 4 /** 5*/,
-        icon_num: 4,
-        time_per_icon: 100,
+    const [slotConfig, setSlotConfig] = useState<SlotConfigType>({
+        icon_width: '80%' /** 5*/,
+        icon_height: 160 /** 5*/,
+        icon_num: 16,
+        time_per_icon: 140,
         indexes: [0, 0, 0],
         theme: 'soccer',
         reelImg: '/img/reel.png',
-        additional_rotations: 10,
-        number_of_reels: 3,
+        additional_rotations: 0.2,
+        number_of_reels: 4,
+
+        // vars
+        screen_height: 0,
     });
+
+    const changeWindowSize = useCallback(
+        () =>
+            setSlotConfig((prevValue) => ({
+                ...prevValue,
+                screen_height: window.innerHeight,
+                icon_height: document
+                    .querySelector('.reel')
+                    ?.getBoundingClientRect().width as number,
+                // icon_width: document
+                //     .querySelector('.reel')
+                //     ?.getBoundingClientRect().width as number,
+            })),
+        []
+    );
+
+    useEffect(() => {
+        changeWindowSize();
+        window.addEventListener('resize', changeWindowSize);
+
+        // Cleanup function to remove the event listener on unmount
+        return () => {
+            window.removeEventListener('resize', changeWindowSize);
+        };
+    }, [changeWindowSize]);
 
     const fetchData = useCallback(async () => {
         const response = await axios.get(
