@@ -40,7 +40,7 @@ export type SlotReward = {
 export function App() {
     const awardsRef = useRef();
     const { config, dispatch } = useConfigContext();
-    const [slotConfig] = useState<SlotConfigType>({
+    const [slotConfig, setSlotConfig] = useState<SlotConfigType>({
         icon_width: 203 /** 5*/,
         icon_height: 203 /** 5*/,
         icon_num: 16,
@@ -52,8 +52,33 @@ export function App() {
         number_of_reels: 4,
     });
 
-        const queryParameters = new URLSearchParams(window.location.search)
+    const queryParameters = new URLSearchParams(window.location.search);
 
+    const changeWindowSize = useCallback(() => {
+        if (window.innerWidth < 900) {
+            setSlotConfig((prevValue) => ({
+                ...prevValue,
+                icon_width: (window.innerWidth * 203) / 900,
+                icon_height: (window.innerWidth * 203) / 900,
+            }));
+        } else {
+            setSlotConfig((prevValue) => ({
+                ...prevValue,
+                icon_width: 203,
+                icon_height: 203,
+            }));
+        }
+    }, []);
+
+    useEffect(() => {
+        changeWindowSize();
+        window.addEventListener('resize', changeWindowSize);
+
+        // Cleanup function to remove the event listener on unmount
+        return () => {
+            window.removeEventListener('resize', changeWindowSize);
+        };
+    }, [changeWindowSize]);
 
     const fetchData = useCallback(async () => {
         const response = await axios.get(
@@ -149,7 +174,7 @@ export function App() {
                             is_bacana: isBacana,
                             prize_id: element.id,
                             config_id: internalConfig.id,
-                            player: queryParameters.get("email"),
+                            player: queryParameters.get('email'),
                         },
                     });
                 }
@@ -158,7 +183,7 @@ export function App() {
                 console.log(err);
             }
         },
-        [fetchData]
+        [fetchData, queryParameters]
     );
 
     const handleOnLose = useCallback(
@@ -172,16 +197,15 @@ export function App() {
                         won_premium: false,
                         is_bacana: isBacana,
                         config_id: internalConfig.id,
-                        player: queryParameters.get("email"),
+                        player: queryParameters.get('email'),
                     },
                 });
                 await fetchData();
-
             } catch (err) {
                 console.log(err);
             }
         },
-        [fetchData]
+        [fetchData, queryParameters]
     );
 
     useEffect(() => {

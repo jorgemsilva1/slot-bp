@@ -26,6 +26,16 @@
     font-family: 'Futura';
 }
 
+html,
+body {
+    width: 100%;
+    max-width: 845px;
+}
+
+*:hover {
+    cursor: url(/play.svg) 15 25, auto;
+}
+
 a {
     font-weight: 500;
     color: #646cff;

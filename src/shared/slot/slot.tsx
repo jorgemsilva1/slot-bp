@@ -134,10 +134,8 @@ export const Slot = ({
     );
 
     const handleRoll = useCallback(async () => {
-        const canPlay = await checkIfUserCanPlay(1);
-
         disabled.current = true;
-        const probability = 100 || probArr.current[myArr.current.length];
+        const probability = 15 || probArr.current[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
@@ -367,7 +365,7 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
     justify-content: space-between;
     width: ${({ _variables }) =>
         `${_variables.icon_width * (_variables.number_of_reels * 1.04)}px`};
-    height: 606px;
+    height: ${({ _variables }) => `${_variables.icon_height * 3}px`};
     overflow: hidden;
     border-radius: 12px;
 
