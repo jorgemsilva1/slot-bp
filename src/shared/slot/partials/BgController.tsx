@@ -22,6 +22,7 @@ export const BgController = ({
 
 const Background = styled.div`
     position: absolute;
+    background: #232323;
     top: 0;
     left: 0;
     width: 100%;

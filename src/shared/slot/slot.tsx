@@ -277,7 +277,6 @@ export const Slot = ({
                 <BgController backgroundId={bg as any} />
                 <>
                     {/* WINNER PRIZE */}
-                    <WinnerPrize gameOver={gameOver} prizes={prizes.current} />
                     {/* END WINNER PRIZE */}
                     <SlotMachine _variables={config}>
                         {Array.from(Array(config.number_of_reels).keys()).map(
@@ -361,6 +360,7 @@ const Container = styled.main`
 const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
     position: absolute;
     top: 0;
+    background:#232323;
     display: flex;
     justify-content: space-between;
     width: ${({ _variables }) =>
