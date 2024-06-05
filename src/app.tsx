@@ -43,7 +43,7 @@ export function App() {
         number_of_reels: 4,
     });
 
-    const fetchData = useCallback(async () => {
+    const fetchData = useCallback(async (isBacana?: boolean) => {
         const response = await axios.get(
             `${
                 CONFIG.apiUrl
@@ -52,9 +52,9 @@ export function App() {
         let activeSlot = response.data.data.find(
             (el: any) => el.attributes.active
         );
-
+        const awards = activeSlot.attributes.awards.data.filter(award => isBacana ? award.attributes.is_premium_prize : !award.attributes.is_premium_prize);
         const theme = activeSlot.attributes.theme.data.attributes.theme_id;
-        const rewards = activeSlot.attributes.awards.data.map((award: any) => ({
+        const rewards = awards.map((award: any) => ({
             id: award.id,
             name: award.attributes.name,
             is_premium_prize: award.attributes.is_premium_prize,
@@ -83,7 +83,7 @@ export function App() {
                 dispatch(resetState());
             }
 
-            const res = await fetchData();
+            const res = await fetchData(isBacana);
             const userType =
                 config.user_type || isBacana === undefined
                     ? undefined
@@ -93,13 +93,13 @@ export function App() {
 
             if(change){
                 if(config.user_type === 'bacana' || isBacana){
-                    setSlotConfig((config) => ({
-                        ...config,
+                    setSlotConfig((conf) => ({
+                        ...conf,
                         reelImg: '/img/reel-hoodie.png',
                     }))
                 }else{
-                    setSlotConfig((config) => ({
-                        ...config,
+                    setSlotConfig((conf) => ({
+                        ...conf,
                         reelImg: '/img/reel-regular.png',
                     }))
                 }
