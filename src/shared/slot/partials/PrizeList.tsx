@@ -15,4 +15,8 @@ export const PrizeList = ({ arr }: { arr: any[] }) => {
 
 const List = styled.ul`
     z-index: 9;
+
+    li {
+        color: #fff;
+    }
 `;

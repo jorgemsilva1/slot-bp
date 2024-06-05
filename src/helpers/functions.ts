@@ -166,6 +166,8 @@ export const arrayOfProbabilities = (length = 5, finalProb: number) => {
         () => Math.floor(Math.random() * finalProb) + 1
     );
 
+    debugger;
+
     randomNumbers.push(finalProb);
 
     return shuffle(randomNumbers);

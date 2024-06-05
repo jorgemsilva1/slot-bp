@@ -165,12 +165,10 @@ export const Slot = ({
 
         let selectedItem = undefined;
 
-        debugger;
-
         // In scenarios where customer has won already one prize and he is bacana play,
         // force to be the VIP AREA
-        if (isBacana && hasOnePrizeWon && !prizes.current.includes(0)) {
-            selectedItem = 0;
+        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3)) {
+            selectedItem = 3;
         }
 
         const item = probabilityCalc(awards, prizes.current, selectedItem);
@@ -400,7 +398,7 @@ const Container = styled.main`
 
     &#gameover-container {
         * {
-            color: #000;
+            color: #fff;
             text-transform: uppercase;
         }
 
