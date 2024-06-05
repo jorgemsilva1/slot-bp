@@ -161,12 +161,6 @@ function shuffle(array: any[]) {
 }
 
 export const arrayOfProbabilities = (length = 5, finalProb: number) => {
-    const randomNumbers = Array.from(
-        { length: length - 1 },
-        () => Math.floor(Math.random() * finalProb) + 1
-    );
 
-    randomNumbers.push(finalProb);
-
-    return shuffle(randomNumbers);
+    return shuffle(length === 4 ? [20,20,20,20] : [100]);
 };

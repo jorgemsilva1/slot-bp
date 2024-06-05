@@ -62,8 +62,6 @@ export const Slot = ({
     const prizes = useRef([]);
     const probArr = useRef([]);
 
-    console.log(contextConfig.value);
-
     // SOUNDS REF
     const [hasSound, setHasSound] = useState(false);
     const ambienceSoundRef = useRef(null);
@@ -122,7 +120,7 @@ export const Slot = ({
             const style = window.getComputedStyle(reel),
                 backgroundPositionY = parseFloat(style['backgroundPositionY']),
                 targetBackgroundPosition =
-                    backgroundPositionY + delta * config.icon_height;
+                    backgroundPositionY + delta * config.icon_height - 300;
 
             return new Promise((resolve) => {
                 const animationTime =
@@ -164,8 +162,6 @@ export const Slot = ({
                 : shouldBeTrue(probability);
 
         let selectedItem = undefined;
-
-        debugger;
 
         // In scenarios where customer has won already one prize and he is bacana play,
         // force to be the VIP AREA
@@ -236,7 +232,7 @@ export const Slot = ({
             setBg('two');
             clickSoundRef.current.playSound();
             ambienceSoundRef.current.setVolume(0.02);
-            await fetchInitialData(bool);
+            await fetchInitialData(bool, true);
             disabled.current = false;
         },
         [fetchInitialData]
@@ -253,7 +249,7 @@ export const Slot = ({
         setShowPrize(false);
         clickSoundRef.current.playSound();
         ambienceSoundRef.current.setVolume(0.2);
-        await fetchInitialData();
+        await fetchInitialData(false, false);
         myArr.current = [];
         disabled.current = [];
         prizes.current = [];

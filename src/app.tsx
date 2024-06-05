@@ -31,14 +31,14 @@ export type SlotReward = {
 export function App() {
     const awardsRef = useRef();
     const { config, dispatch } = useConfigContext();
-    const [slotConfig] = useState<SlotConfigType>({
+    const [slotConfig, setSlotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 6,
+        icon_num: 8,
         time_per_icon: 80,
         indexes: [0, 0, 0],
         theme: 'soccer',
-        reelImg: '/img/reel.png',
+        reelImg: '/img/reel-base.png',
         additional_rotations: 2,
         number_of_reels: 4,
     });
@@ -78,7 +78,7 @@ export function App() {
     }, []);
 
     const fetchInitialData = useCallback(
-        async (isBacana?: boolean) => {
+        async (isBacana?: boolean, change?: boolean) => {
             if (config.user_type) {
                 dispatch(resetState());
             }
@@ -90,12 +90,32 @@ export function App() {
                     : isBacana
                     ? 'bacana'
                     : 'regular';
+
+            if(change){
+                if(config.user_type === 'bacana' || isBacana){
+                    setSlotConfig((config) => ({
+                        ...config,
+                        reelImg: '/img/reel-hoodie.png',
+                    }))
+                }else{
+                    setSlotConfig((config) => ({
+                        ...config,
+                        reelImg: '/img/reel-regular.png',
+                    }))
+                }
+            }else{
+                setSlotConfig((config) => ({
+                    ...config,
+                    reelImg: '/img/reel-base.png',
+                }))
+            }
+
             const numOfPlays =
                 (config.user_type || isBacana) === undefined
                     ? null
                     : config.user_type === 'bacana' || isBacana
-                    ? 10
-                    : 5;
+                    ? 1
+                    : 4;
 
             if (!config.user_type && !config.num_of_plays)
                 dispatch(setInitialStateData(userType, numOfPlays, 100));
