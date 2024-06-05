@@ -51,7 +51,8 @@ function getRandomItem(items: any[]) {
 type ProbabilityItem = { base_probability: number } & SlotReward;
 export const probabilityCalc = (
     items: ProbabilityItem[],
-    prizesIndexArr: number[]
+    prizesIndexArr: number[],
+    itemIndex?: number
 ): SlotReward => {
     // Make sure we only use items that have qty
     let filteredItems = items.filter((i) => i.qty > 0);
@@ -88,7 +89,12 @@ export const probabilityCalc = (
             1000;
     });
 
-    const item = getRandomItem(filteredItems);
+    let item = getRandomItem(filteredItems);
+
+    if (typeof itemIndex === 'number') {
+        const selectedItem = filteredItems.find((i) => i.index === itemIndex);
+        if (selectedItem) item = selectedItem;
+    }
 
     return item;
 };
@@ -154,16 +160,13 @@ function shuffle(array: any[]) {
     return array;
 }
 
-export const arrayOfProbabilities = (length = 5) => {
-    const isBacanaProb = length === 10 ? 25 : 20;
-
+export const arrayOfProbabilities = (length = 5, finalProb: number) => {
     const randomNumbers = Array.from(
         { length: length - 1 },
-        () => Math.floor(Math.random() * isBacanaProb) + 1
+        () => Math.floor(Math.random() * finalProb) + 1
     );
 
-    // Add 100 to the array
-    const arrayWith100 = [...randomNumbers, 100];
+    randomNumbers.push(finalProb);
 
-    return shuffle(arrayWith100);
+    return shuffle(randomNumbers);
 };

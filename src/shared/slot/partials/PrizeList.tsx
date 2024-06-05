@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 
 export const PrizeList = ({ arr }: { arr: any[] }) => {
+    console.log(arr);
     return (
         <List id="prizes">
             {arr.map((item, index) => (

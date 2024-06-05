@@ -16,6 +16,8 @@ import { Controls } from './partials/Controls';
 import { SoundStudio } from './partials/SoundStudio';
 import { BtnToggle } from './partials/BtnToggle';
 import PrizeDesktopBg from '../../assets/svg/prize_desktop.svg';
+import axios from 'axios';
+import { CONFIG } from '../../config/index.';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -52,8 +54,15 @@ export const Slot = ({
     const [bg, setBg] = useState('one');
     const [showPrize, setShowPrize] = useState(false);
 
+    const [probs, setProbs] = useState({
+        user: 0,
+        bacana: 0,
+    });
+
     const prizes = useRef([]);
     const probArr = useRef([]);
+
+    console.log(contextConfig.value);
 
     // SOUNDS REF
     const [hasSound, setHasSound] = useState(false);
@@ -131,7 +140,21 @@ export const Slot = ({
 
     const handleRoll = useCallback(async () => {
         disabled.current = true;
-        const probability = probArr.current[myArr.current.length];
+        const hasOnePrizeWon = prizes.current.length === 1;
+        const isBacana = contextConfig.value.user_type === 'bacana';
+
+        // 1. If it is second play, add a 15% chance on every round
+        // 2. If non-user, and has won already one prize, can only win on the 4/5th play
+        let probability;
+        if (hasOnePrizeWon) {
+            if (isBacana) {
+                probability = myArr.current.length <= 5 ? 0 : 15;
+            } else {
+                probability = myArr.current.length <= 3 ? 0 : 15;
+            }
+        } else {
+            probability = probArr.current[myArr.current.length];
+        }
 
         rollSoundRef.current.playSound();
 
@@ -140,10 +163,17 @@ export const Slot = ({
                 ? false
                 : shouldBeTrue(probability);
 
-        // let winningSymbolIndex = willAlwaysWin
-        //     ? Math.floor(Math.random() * config.icon_num)
-        //     : null;
-        const item = probabilityCalc(awards, prizes.current);
+        let selectedItem = undefined;
+
+        debugger;
+
+        // In scenarios where customer has won already one prize and he is bacana play,
+        // force to be the VIP AREA
+        if (isBacana && hasOnePrizeWon && !prizes.current.includes(0)) {
+            selectedItem = 0;
+        }
+
+        const item = probabilityCalc(awards, prizes.current, selectedItem);
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
@@ -157,7 +187,7 @@ export const Slot = ({
 
         myArr.current = [
             ...myArr.current,
-            winningSymbolIndex ? item.name : null,
+            typeof winningSymbolIndex === 'number' ? item.name : null,
         ];
         // console.table(myArr.current);
 
@@ -165,7 +195,7 @@ export const Slot = ({
         if (deltas.every((value, _, arr) => arr[0] === value)) {
             setShowPrize(true);
 
-            onWin(deltas[0], contextConfig.value.user_type === 'bacana');
+            onWin(deltas[0], isBacana);
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
@@ -183,7 +213,7 @@ export const Slot = ({
                 endGame();
             }
         } else {
-            onLose(contextConfig.value.user_type === 'bacana');
+            onLose(isBacana);
             lostSoundRef.current.playSound();
         }
 
@@ -251,14 +281,38 @@ export const Slot = ({
         });
     }, [awards?.length, gameOver, handleReset, handleRoll]);
 
+    const getProbs = useCallback(async () => {
+        try {
+            // Get slot probs
+            const response = await axios.get(
+                `${CONFIG.apiUrl}/api/configs?fields[0]=bacana_user_chance&fields[1]=non_bacana_user_chance&fields[2]=active`
+            );
+            const activeSlot = response.data.data.find(
+                (el: any) => el.attributes.active
+            );
+
+            probArr.current = arrayOfProbabilities(
+                contextConfig.value.num_of_plays,
+                contextConfig.value.num_of_plays === 5
+                    ? activeSlot.attributes.non_bacana_user_chance
+                    : activeSlot.attributes.bacana_user_chance
+            );
+
+            return {
+                user: activeSlot.attributes.non_bacana_user_chance,
+                bacana: activeSlot.attributes.bacana_user_chance,
+            };
+        } catch (err) {
+            alert('Ocorreu um erro com as probs.');
+        }
+    }, [contextConfig.value.num_of_plays]);
+
     useEffect(() => {
         if (contextConfig.value.num_of_plays) {
             setNumberOfPlays(contextConfig.value.num_of_plays);
-            probArr.current = arrayOfProbabilities(
-                contextConfig.value.num_of_plays
-            );
+            getProbs();
         }
-    }, [contextConfig.value.num_of_plays]);
+    }, [contextConfig.value.num_of_plays, getProbs]);
 
     useEffect(() => {
         if (numberOfPlays === 0) {

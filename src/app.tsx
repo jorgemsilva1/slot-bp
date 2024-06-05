@@ -26,14 +26,6 @@ export type SlotReward = {
     rarity: number;
     base_probability?: number;
     adjusted_prob?: number;
-    icon: {
-        filetype: string;
-        height: number;
-        width: number;
-        url: string;
-        fileUrl: string;
-        filename: string;
-    };
 };
 
 export function App() {
@@ -70,21 +62,16 @@ export function App() {
             stock: award.attributes.stock,
             index: award.attributes.index,
             rarity: award.attributes.rarity_level,
-            icon: {
-                filetype:
-                    award.attributes.icon.data.attributes.ext.split('.')[1],
-                height: award.attributes.icon.data.attributes.height,
-                width: award.attributes.icon.data.attributes.width,
-                url: award.attributes.icon.data.attributes.url,
-                fileUrl: `${CONFIG.apiUrl}${award.attributes.icon.data.attributes.url}`,
-                filename: award.attributes.icon.data.attributes.hash,
-            },
         }));
 
         activeSlot = {
             id: activeSlot.id,
             rewards,
             theme,
+            probs: {
+                bacana: activeSlot.attributes.bacana_user_chance,
+                user: activeSlot.attributes.non_bacana_user_chance,
+            },
         };
         awardsRef.current = activeSlot;
         return activeSlot;
@@ -96,7 +83,7 @@ export function App() {
                 dispatch(resetState());
             }
 
-            await fetchData();
+            const res = await fetchData();
             const userType =
                 config.user_type || isBacana === undefined
                     ? undefined
