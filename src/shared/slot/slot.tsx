@@ -143,16 +143,14 @@ export const Slot = ({
 
         const now = new Date();
 
-        const currentHours = now.getHours()
+        const currentHours = now.getHours();
 
         now.setHours(now.getHours() - 1);
 
         const formattedDate = now.toISOString().slice(0, 16);
 
         const response = await axios.get(
-            `${
-                CONFIG.apiUrl
-            }/api/plays?filters[won_premium][$eq]=true&filters[createdAt][$gte]=${formattedDate}`
+            `${CONFIG.apiUrl}/api/plays?filters[won_premium][$eq]=true&filters[createdAt][$gte]=${formattedDate}`
         );
 
         // 1. If it is second play, add a 15% chance on every round
@@ -160,8 +158,16 @@ export const Slot = ({
         let probability;
         if (hasOnePrizeWon) {
             if (isBacana) {
-                probability = myArr.current.length <= 1 ? 0 : awards.filter((el) => el.qty > 0 && el.index === 3).length > 0
-                && !prizes.current.includes(3) && (response?.data?.meta?.pagination?.total < 20 || currentHours > 19) ? 50 : 15;
+                probability =
+                    myArr.current.length <= 1
+                        ? 0
+                        : awards.filter((el) => el.qty > 0 && el.index === 3)
+                              .length > 0 &&
+                          !prizes.current.includes(3) &&
+                          (response?.data?.meta?.pagination?.total < 20 ||
+                              currentHours > 19)
+                        ? 50
+                        : 15;
             } else {
                 probability = myArr.current.length <= 3 ? 0 : 15;
             }
@@ -180,11 +186,16 @@ export const Slot = ({
 
         // In scenarios where customer has won already one prize and he is bacana play,
         // force to be the VIP AREA
-        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3)) {
-            selectedItem = 3;
-        }
+        // if (isBacana && hasOnePrizeWon && !prizes.current.includes(3)) {
+        //     selectedItem = 3;
+        // }
 
-        const item = probabilityCalc(awards, prizes.current, selectedItem);
+        const item = probabilityCalc(
+            awards,
+            prizes.current,
+            selectedItem,
+            isBacana
+        );
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
