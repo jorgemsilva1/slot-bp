@@ -169,7 +169,7 @@ export const Slot = ({
             selectedItem = 0;
         }
 
-        const item = probabilityCalc(
+        const item = await probabilityCalc(
             awards,
             prizes.current,
             selectedItem,
