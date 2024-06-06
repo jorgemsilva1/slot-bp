@@ -169,7 +169,12 @@ export const Slot = ({
             selectedItem = 0;
         }
 
-        const item = probabilityCalc(awards, prizes.current, selectedItem, isBacana);
+        const item = probabilityCalc(
+            awards,
+            prizes.current,
+            selectedItem,
+            isBacana
+        );
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
@@ -396,7 +401,7 @@ const Container = styled.main`
 
     &#gameover-container {
         * {
-            color: #000;
+            color: #fff;
             text-transform: uppercase;
         }
 
@@ -481,7 +486,7 @@ const WonPrize = styled.section`
         line-height: 160px;
         color: #fff;
         font-family: 'Futura';
-        font-size: 180px;
+        font-size: 140px;
         font-weight: bold;
         text-transform: uppercase;
         margin: 0;
