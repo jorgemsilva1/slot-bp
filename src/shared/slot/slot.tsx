@@ -180,11 +180,11 @@ export const Slot = ({
 
         // In scenarios where customer has won already one prize and he is bacana play,
         // force to be the VIP AREA
-        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3)) {
+        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3) ) {
             selectedItem = 3;
         }
 
-        const item = probabilityCalc(awards, prizes.current, selectedItem);
+        const item = await probabilityCalc(awards, prizes.current, selectedItem);
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 

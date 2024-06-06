@@ -1,5 +1,7 @@
 import { StateUpdater } from 'preact/hooks';
 import { SlotConfigType, SlotReward } from '../app';
+import axios from 'axios';
+import { CONFIG } from '../config/index..ts';
 
 export const shouldBeTrue = (percentage: number): boolean => {
     const randomValue = Math.floor(Math.random() * (100 - 1 + 1) + 1);
@@ -49,13 +51,19 @@ function getRandomItem(items: any[]) {
 }
 
 type ProbabilityItem = { base_probability: number } & SlotReward;
-export const probabilityCalc = (
+export const probabilityCalc = async (
     items: ProbabilityItem[],
     prizesIndexArr: number[],
     itemIndex?: number
-): SlotReward => {
+): Promise<SlotReward> => {
     // Make sure we only use items that have qty
-    let filteredItems = items.filter((i) => i.qty > 0);
+    const response = await axios.get(
+        `${
+            CONFIG.apiUrl
+        }/api/awards?filters[qty][$gt]=0`
+    );
+
+    let filteredItems = response.data;
 
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
