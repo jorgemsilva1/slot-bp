@@ -52,10 +52,12 @@ type ProbabilityItem = { base_probability: number } & SlotReward;
 export const probabilityCalc = (
     items: ProbabilityItem[],
     prizesIndexArr: number[],
-    itemIndex?: number
+    itemIndex?: number,
+    isBacana?: boolean
 ): SlotReward => {
+
     // Make sure we only use items that have qty
-    let filteredItems = items.filter((i) => i.qty > 0);
+    let filteredItems = items.filter((i) => i.qty > 0 && (isBacana ? i.is_premium_prize : !i.is_premium_prize));
 
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
@@ -162,5 +164,5 @@ function shuffle(array: any[]) {
 
 export const arrayOfProbabilities = (length = 5, finalProb: number) => {
 
-    return shuffle(length === 4 ? [20,20,20,20] : [100]);
+    return shuffle(length === 4 ? [25,25,25,25] : [100]);
 };

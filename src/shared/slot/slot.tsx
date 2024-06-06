@@ -146,9 +146,9 @@ export const Slot = ({
         let probability;
         if (hasOnePrizeWon) {
             if (isBacana) {
-                probability = myArr.current.length <= 5 ? 0 : 15;
+                probability = myArr.current.length <= 5 ? 0 : 0;
             } else {
-                probability = myArr.current.length <= 3 ? 0 : 15;
+                probability = myArr.current.length <= 3 ? 0 : 0;
             }
         } else {
             probability = probArr.current[myArr.current.length];
@@ -169,7 +169,7 @@ export const Slot = ({
             selectedItem = 0;
         }
 
-        const item = probabilityCalc(awards, prizes.current, selectedItem);
+        const item = probabilityCalc(awards, prizes.current, selectedItem, isBacana);
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 

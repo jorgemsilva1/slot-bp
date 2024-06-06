@@ -52,9 +52,8 @@ export function App() {
         let activeSlot = response.data.data.find(
             (el: any) => el.attributes.active
         );
-        const awards = activeSlot.attributes.awards.data.filter(award => isBacana ? award.attributes.is_premium_prize : !award.attributes.is_premium_prize);
         const theme = activeSlot.attributes.theme.data.attributes.theme_id;
-        const rewards = awards.map((award: any) => ({
+        const rewards = activeSlot.attributes.awards.data.map((award: any) => ({
             id: award.id,
             name: award.attributes.name,
             is_premium_prize: award.attributes.is_premium_prize,
@@ -155,7 +154,7 @@ export function App() {
                         },
                     });
                 }
-                await fetchData();
+                await fetchData(isBacana);
             } catch (err) {
                 console.log(err);
             }
@@ -176,7 +175,7 @@ export function App() {
                         config_id: internalConfig.id,
                     },
                 });
-                await fetchData();
+                await fetchData(isBacana);
             } catch (err) {
                 console.log(err);
             }
