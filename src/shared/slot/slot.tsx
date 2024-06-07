@@ -167,9 +167,9 @@ export const Slot = ({
                           (response?.data?.meta?.pagination?.total < 20 ||
                               currentHours > 19)
                         ? 50
-                        : 15;
+                        : 20;
             } else {
-                probability = myArr.current.length <= 3 ? 0 : 15;
+                probability = myArr.current.length <= 3 ? 0 : 20;
             }
         } else {
             probability = probArr.current[myArr.current.length];
@@ -183,10 +183,9 @@ export const Slot = ({
                 : shouldBeTrue(probability);
 
         let selectedItem = undefined;
-
         // In scenarios where customer has won already one prize and he is bacana play,
         // force to be the VIP AREA
-        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3) ) {
+        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3) && awards.filter((i) => i.index === 3)[0]?.qty > 0) {
             selectedItem = 3;
         }
 
@@ -222,14 +221,14 @@ export const Slot = ({
 
             prizes.current = [...prizes.current, item.index];
 
-            // if (prizes.current.length === 1) {
-            //     // If first prize, add to the array and change probability to a quarter
-            //     dispatch(
-            //         setWinPercentage(
-            //             contextConfig.value.user_type === 'bacana' ? 20 : 15
-            //         )
-            //     );
-            // } else
+            if (prizes.current.length === 1) {
+                // If first prize, add to the array and change probability to a quarter
+                dispatch(
+                    setWinPercentage(
+                        contextConfig.value.user_type === 'bacana' ? 20 : 15
+                    )
+                );
+            } else
             if (prizes.current.length === 2) {
                 // If is second prize, finish the game
                 endGame();

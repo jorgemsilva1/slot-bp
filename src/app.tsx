@@ -94,7 +94,7 @@ export function App() {
                 (config.user_type || isBacana) === undefined
                     ? null
                     : config.user_type === 'bacana' || isBacana
-                    ? 10
+                    ? 5
                     : 5;
 
             if (!config.user_type && !config.num_of_plays)

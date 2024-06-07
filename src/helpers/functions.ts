@@ -64,7 +64,7 @@ export const probabilityCalc = async (
         }/api/awards?filters[qty][$gt]=0`
     );
 
-    let filteredItems = response.data.filter((i) => (!isBacana ? i.index !== 3 : true));;
+    let filteredItems = response.data.data.map((item) => ({...item.attributes, id: item.id})).filter((i) => (!isBacana ? i.index !== 3 : true));
 
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
@@ -82,7 +82,7 @@ export const probabilityCalc = async (
         0
     );
     const totalRarity = filteredItems.reduce(
-        (total, item) => total + 1 / item.rarity,
+        (total, item) => total + 1 / item.rarity_level,
         0
     );
 
@@ -94,7 +94,7 @@ export const probabilityCalc = async (
     // Adjust Probabilities based on Stock Levels
     filteredItems.forEach((item) => {
         item.adjusted_prob =
-            (item.base_probability / item.rarity / totalRarity / initialStock) *
+            (item.base_probability / item.rarity_level / totalRarity / initialStock) *
             1000;
     });
 
