@@ -128,7 +128,7 @@ export function App() {
 
             // Find the element with the winning index
             const element = internalConfig.rewards.find(
-                (el) => el.index === wonIndex
+                (el) => el.index === wonIndex && el.is_premium_prize === isBacana
             );
 
             try {

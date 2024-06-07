@@ -62,11 +62,12 @@ export const probabilityCalc = async (
     const response = await axios.get(
         `${
             CONFIG.apiUrl
-        }/api/awards?filters[qty][$gt]=0`
+        }/api/awards?filters[qty][$gt]=0&filters[is_premium_prize][$eq]=${isBacana ? 'true' : 'false'}`
     );
 
-    let filteredItems = response.data;
 
+    let filteredItems = response.data.data.map((item) => ({...item.attributes, id: item.id}));
+    console.log(filteredItems);
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
             (i) => i.index !== prizesIndexArr[0]
@@ -83,7 +84,7 @@ export const probabilityCalc = async (
         0
     );
     const totalRarity = filteredItems.reduce(
-        (total, item) => total + 1 / item.rarity,
+        (total, item) => total + 1 / item.rarity_level,
         0
     );
 
@@ -95,12 +96,11 @@ export const probabilityCalc = async (
     // Adjust Probabilities based on Stock Levels
     filteredItems.forEach((item) => {
         item.adjusted_prob =
-            (item.base_probability / item.rarity / totalRarity / initialStock) *
+            (item.base_probability / item.rarity_level / totalRarity / initialStock) *
             1000;
     });
 
     let item = getRandomItem(filteredItems);
-
     if (typeof itemIndex === 'number') {
         const selectedItem = filteredItems.find((i) => i.index === itemIndex);
         if (selectedItem) item = selectedItem;
@@ -172,5 +172,5 @@ function shuffle(array: any[]) {
 
 export const arrayOfProbabilities = (length = 5, finalProb: number) => {
 
-    return shuffle(length === 4 ? [25,25,25,25] : [100]);
+    return shuffle(length === 4 ? [100,15,15,15] : [100]);
 };
