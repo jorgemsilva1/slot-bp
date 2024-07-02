@@ -141,18 +141,6 @@ export const Slot = ({
         const hasOnePrizeWon = prizes.current.length === 1;
         const isBacana = contextConfig.value.user_type === 'bacana';
 
-        const now = new Date();
-
-        const currentHours = now.getHours();
-
-        now.setHours(now.getHours() - 1);
-
-        const formattedDate = now.toISOString().slice(0, 16);
-
-        const response = await axios.get(
-            `${CONFIG.apiUrl}/api/plays?filters[won_premium][$eq]=true&filters[createdAt][$gte]=${formattedDate}`
-        );
-
         // 1. If it is second play, add a 15% chance on every round
         // 2. If non-user, and has won already one prize, can only win on the 4/5th play
         let probability;
@@ -161,12 +149,6 @@ export const Slot = ({
                 probability =
                     myArr.current.length <= 1
                         ? 0
-                        : awards.filter((el) => el.qty > 0 && el.index === 3)
-                              .length > 0 &&
-                          !prizes.current.includes(3) &&
-                          (response?.data?.meta?.pagination?.total < 20 ||
-                              currentHours > 19)
-                        ? 50
                         : 20;
             } else {
                 probability = myArr.current.length <= 3 ? 0 : 20;
@@ -182,18 +164,11 @@ export const Slot = ({
                 ? false
                 : shouldBeTrue(probability);
 
-        let selectedItem = undefined;
-        // In scenarios where customer has won already one prize and he is bacana play,
-        // force to be the VIP AREA
-        if (isBacana && hasOnePrizeWon && !prizes.current.includes(3) && awards.filter((i) => i.index === 3)[0]?.qty > 0) {
-            selectedItem = 3;
-        }
+
 
         const item = await probabilityCalc(
             awards,
-            prizes.current,
-            selectedItem,
-            isBacana
+            prizes.current
         );
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
@@ -314,7 +289,7 @@ export const Slot = ({
 
             probArr.current = arrayOfProbabilities(
                 contextConfig.value.num_of_plays,
-                contextConfig.value.num_of_plays === 5
+                contextConfig.value.user_type === 'regular'
                     ? activeSlot.attributes.non_bacana_user_chance
                     : activeSlot.attributes.bacana_user_chance
             );
@@ -365,7 +340,7 @@ export const Slot = ({
                                 <img src={PrizeDesktopBg} alt="" />
                                 <span>
                                     <p className="title">Ganhaste:</p>
-                                    <p>
+                                    <p style={{fontSize: '6rem'}}>
                                         {
                                             myArr.current[
                                                 myArr.current.length - 1

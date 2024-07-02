@@ -54,8 +54,6 @@ type ProbabilityItem = { base_probability: number } & SlotReward;
 export const probabilityCalc = async (
     items: ProbabilityItem[],
     prizesIndexArr: number[],
-    itemIndex?: number,
-    isBacana: boolean
 ): Promise<SlotReward> => {
     // Make sure we only use items that have qty
     const response = await axios.get(
@@ -64,7 +62,7 @@ export const probabilityCalc = async (
         }/api/awards?filters[qty][$gt]=0`
     );
 
-    let filteredItems = response.data.data.map((item) => ({...item.attributes, id: item.id})).filter((i) => (!isBacana ? i.index !== 3 : true));
+    let filteredItems = response.data.data.map((item) => ({...item.attributes, id: item.id}))
 
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
@@ -98,14 +96,7 @@ export const probabilityCalc = async (
             1000;
     });
 
-    let item = getRandomItem(filteredItems);
-
-    if (typeof itemIndex === 'number') {
-        const selectedItem = filteredItems.find((i) => i.index === itemIndex);
-        if (selectedItem) item = selectedItem;
-    }
-
-    return item;
+    return getRandomItem(filteredItems);
 };
 
 export const configTheme = (
