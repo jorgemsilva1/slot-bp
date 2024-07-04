@@ -120,7 +120,7 @@ export const Slot = ({
             const style = window.getComputedStyle(reel),
                 backgroundPositionY = parseFloat(style['backgroundPositionY']),
                 targetBackgroundPosition =
-                    backgroundPositionY + delta * config.icon_height;
+                    backgroundPositionY + delta * config.icon_height - 52;
 
             return new Promise((resolve) => {
                 const animationTime =
