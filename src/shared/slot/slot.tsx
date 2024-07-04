@@ -120,7 +120,7 @@ export const Slot = ({
             const style = window.getComputedStyle(reel),
                 backgroundPositionY = parseFloat(style['backgroundPositionY']),
                 targetBackgroundPosition =
-                    backgroundPositionY + delta * config.icon_height - 52;
+                    backgroundPositionY + delta * config.icon_height;
 
             return new Promise((resolve) => {
                 const animationTime =
@@ -146,10 +146,7 @@ export const Slot = ({
         let probability;
         if (hasOnePrizeWon) {
             if (isBacana) {
-                probability =
-                    myArr.current.length <= 1
-                        ? 0
-                        : 20;
+                probability = myArr.current.length <= 1 ? 0 : 20;
             } else {
                 probability = myArr.current.length <= 3 ? 0 : 20;
             }
@@ -164,12 +161,7 @@ export const Slot = ({
                 ? false
                 : shouldBeTrue(probability);
 
-
-
-        const item = await probabilityCalc(
-            awards,
-            prizes.current
-        );
+        const item = await probabilityCalc(awards, prizes.current);
 
         const winningSymbolIndex = willAlwaysWin ? item.index : null;
 
@@ -203,8 +195,7 @@ export const Slot = ({
                         contextConfig.value.user_type === 'bacana' ? 20 : 15
                     )
                 );
-            } else
-            if (prizes.current.length === 2) {
+            } else if (prizes.current.length === 2) {
                 // If is second prize, finish the game
                 endGame();
             }
@@ -340,7 +331,7 @@ export const Slot = ({
                                 <img src={PrizeDesktopBg} alt="" />
                                 <span>
                                     <p className="title">Ganhaste:</p>
-                                    <p style={{fontSize: '6rem'}}>
+                                    <p style={{ fontSize: '6rem' }}>
                                         {
                                             myArr.current[
                                                 myArr.current.length - 1
