@@ -113,8 +113,8 @@ export const Slot = ({
                 Math.round(Math.random() * config.icon_num);
             if (typeof chosen === 'number')
                 delta =
-                    (offset + config.icon_num * config.additional_rotations) *
-                        config.icon_num +
+                    (offset + (config.icon_num) * config.additional_rotations) *
+                        (config.icon_num) +
                     chosen;
 
             const style = window.getComputedStyle(reel),

@@ -34,12 +34,12 @@ export function App() {
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 4,
-        time_per_icon: 80,
+        icon_num: 16,
+        time_per_icon: 35,
         indexes: [0, 0, 0],
         theme: 'soccer',
-        reelImg: '/img/__reel.png',
-        additional_rotations: 4,
+        reelImg: '/img/reel.png',
+        additional_rotations: 1,
         number_of_reels: 4,
     });
 
