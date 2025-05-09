@@ -25,6 +25,7 @@ type SlotProps = {
     fetchInitialData: any;
     awards: SlotReward[];
     config: SlotConfigType;
+    setPlayFromWs?: (fn: () => void) => void;
 };
 
 export type VariablesType = {
@@ -40,6 +41,7 @@ export const Slot = ({
     awards,
     onLose,
     fetchInitialData,
+    setPlayFromWs,
 }: SlotProps) => {
     const { config: _contextConfig, dispatch } = useConfigContext();
     const contextConfig = useRef({}).current;
@@ -146,9 +148,9 @@ export const Slot = ({
         let probability;
         if (hasOnePrizeWon) {
             if (isBacana) {
-                probability = myArr.current.length <= 1 ? 0 : 20;
+                probability = myArr.current.length <= 1 ? 0 : contextConfig.value.bacana_user_second_chance;
             } else {
-                probability = myArr.current.length <= 3 ? 0 : 20;
+                probability = myArr.current.length <= 3 ? 0 : contextConfig.value.non_bacana_user_second_chance;
             }
         } else {
             probability = probArr.current[myArr.current.length];
@@ -183,7 +185,7 @@ export const Slot = ({
         if (deltas.every((value, _, arr) => arr[0] === value)) {
             setShowPrize(true);
 
-            onWin(deltas[0], isBacana);
+            onWin(item, isBacana);
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
@@ -230,6 +232,7 @@ export const Slot = ({
     );
 
     const handlePlay = useCallback(() => {
+        console.log('[Slot] handlePlay called');
         setClickedPlay(true);
         ambienceSoundRef.current.setVolume(0.04);
         clickSoundRef.current.playSound();
@@ -272,11 +275,15 @@ export const Slot = ({
         try {
             // Get slot probs
             const response = await axios.get(
-                `${CONFIG.apiUrl}/api/configs?fields[0]=bacana_user_chance&fields[1]=non_bacana_user_chance&fields[2]=active`
+                `${CONFIG.apiUrl}/api/configs?fields[0]=bacana_user_chance&fields[1]=non_bacana_user_chance&fields[2]=bacana_user_second_chance&fields[3]=non_bacana_user_second_chance&fields[4]=active`
             );
+
             const activeSlot = response.data.data.find(
                 (el: any) => el.attributes.active
             );
+
+            contextConfig.value.bacana_user_second_chance =activeSlot.attributes.bacana_user_second_chance
+            contextConfig.value.non_bacana_user_second_chance =activeSlot.attributes.non_bacana_user_second_chance
 
             probArr.current = arrayOfProbabilities(
                 contextConfig.value.num_of_plays,
@@ -306,6 +313,18 @@ export const Slot = ({
             endGame();
         }
     }, [numberOfPlays, endGame]);
+
+    useEffect(() => {
+        if (setPlayFromWs) {
+            setPlayFromWs(() => {
+                if (!clickedPlay) {
+                    handlePlay();
+                    handleClickUserType(true)
+                }else if (!contextConfig.value.num_of_plays)
+                    handleClickUserType(true)
+            });
+        }
+    }, [setPlayFromWs, clickedPlay, numberOfPlays, handlePlay]);
 
     return (
         <FullScreen handle={fsHandle}>

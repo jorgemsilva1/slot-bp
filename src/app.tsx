@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
 import { Slot } from './shared';
 import { VariablesType } from './shared/slot/slot';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import {
     setInitialStateData,
     useConfigContext,
 } from './config/configContext';
+import { act } from 'test-utils';
 
 export type SlotConfigType = {
     theme: 'soccer' | 'classic';
@@ -30,11 +31,12 @@ export type SlotReward = {
 
 export function App() {
     const awardsRef = useRef();
+    const [hasWon, setHasWon] = useState(false);
     const { config, dispatch } = useConfigContext();
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 16,
+        icon_num: 7,
         time_per_icon: 35,
         indexes: [0, 0, 0],
         theme: 'soccer',
@@ -43,30 +45,70 @@ export function App() {
         number_of_reels: 4,
     });
 
+    const wsRef = useRef<WebSocket | null>(null);
+    const playFromWs = useRef<() => void>(() => {});
+
+    useEffect(() => {
+        wsRef.current = new WebSocket("ws://localhost:1337");
+
+        wsRef.current.onopen = () => {
+            console.log("WebSocket connected");
+        };
+
+        wsRef.current.onclose = () => {
+            console.log("WebSocket disconnected");
+        };
+
+        wsRef.current.onerror = (err) => {
+            console.error("WebSocket error", err);
+        };
+
+        wsRef.current.onmessage = (msg) => {
+            if (playFromWs.current && !msg.data.includes('Welcome')) playFromWs.current();
+        };
+
+        return () => {
+            wsRef.current?.close();
+        };
+    }, []);
+
     const fetchData = useCallback(async () => {
         const response = await axios.get(
             `${
                 CONFIG.apiUrl
-            }/api/configs?populate=awards.icon,theme&timestamp=${new Date().getTime()}`
+            }/api/configs?populate=awards.icon,theme,awards_bacana,awards_bacana_deposit,force_bacana_award,force_deposit_bacana_award&timestamp=${new Date().getTime()}`
         );
+
         let activeSlot = response.data.data.find(
             (el: any) => el.attributes.active
         );
 
         const theme = activeSlot.attributes.theme.data.attributes.theme_id;
-        const rewards = activeSlot.attributes.awards.data.map((award: any) => ({
-            id: award.id,
-            name: award.attributes.name,
-            is_premium_prize: award.attributes.is_premium_prize,
-            qty: award.attributes.qty,
-            stock: award.attributes.stock,
-            index: award.attributes.index,
-            rarity: award.attributes.rarity_level,
-        }));
+        const mapAwards = (awardsData: any[]) =>
+            awardsData.map((award: any) => ({
+                id: award.id,
+                name: award.attributes.name,
+                is_premium_prize: award.attributes.is_premium_prize,
+                qty: award.attributes.qty,
+                stock: award.attributes.stock,
+                index: award.attributes.index,
+                rarity_level: award.attributes.rarity_level,
+                multiplier: award.attributes.multiplier === 'Double' ? 0.5 : award.attributes.multiplier === 'Triple' ? 0.33 : 1,
+            }));
+
+        const rewards = mapAwards(activeSlot.attributes.awards.data);
+        const rewardsBacana = mapAwards(activeSlot.attributes.awards_bacana.data);
+        const rewardsBacanaDeposit = mapAwards(activeSlot.attributes.awards_bacana_deposit.data);
+        const forceRewardsBacana = mapAwards(activeSlot.attributes.force_bacana_award.data);
+        const forceRewardsBacanaDeposit = mapAwards(activeSlot.attributes.force_deposit_bacana_award.data);
 
         activeSlot = {
             id: activeSlot.id,
             rewards,
+            rewardsBacana,
+            rewardsBacanaDeposit,
+            forceRewardsBacana,
+            forceRewardsBacanaDeposit,
             theme,
             probs: {
                 bacana: activeSlot.attributes.bacana_user_chance,
@@ -79,6 +121,7 @@ export function App() {
 
     const fetchInitialData = useCallback(
         async (isBacana?: boolean) => {
+            setHasWon(false)
             if (config.user_type) {
                 dispatch(resetState());
             }
@@ -104,13 +147,8 @@ export function App() {
     );
 
     const handleOnWin = useCallback(
-        async (wonIndex: number, isBacana: boolean) => {
+        async (element: number, isBacana: boolean) => {
             const internalConfig = awardsRef.current;
-
-            // Find the element with the winning index
-            const element = internalConfig.rewards.find(
-                (el) => el.index === wonIndex
-            );
 
             try {
                 if (element && element.id) {
@@ -134,6 +172,8 @@ export function App() {
                             config_id: internalConfig.id,
                         },
                     });
+
+                    setHasWon(true)
                 }
                 await fetchData();
             } catch (err) {
@@ -164,6 +204,31 @@ export function App() {
         [fetchData]
     );
 
+    const award = useMemo(() => {
+        let awards = null
+        const isAllZero = (arr) => Array.isArray(arr) && arr.every(item => item.qty === 0);
+
+        if (config.user_type === 'bacana') {
+            const force = awardsRef.current?.forceRewardsBacana;
+            const bacana = awardsRef.current?.rewardsBacana;
+
+            if (!hasWon && force && !isAllZero(force)) {
+                awards = force;
+            } else if (bacana && !isAllZero(bacana)) {
+                awards = bacana;
+            } else {
+                awards = [];
+            }
+
+        } else {
+
+            const normal = awardsRef.current?.rewards;
+
+            awards = (normal && !isAllZero(normal)) ? normal : [];
+        }
+        return awards
+    }, [config.user_type, hasWon]);
+
     useEffect(() => {
         fetchInitialData();
     }, []);
@@ -173,8 +238,9 @@ export function App() {
             onWin={handleOnWin}
             onLose={handleOnLose}
             config={slotConfig}
-            awards={awardsRef.current?.rewards}
+            awards={award}
             fetchInitialData={fetchInitialData}
+            setPlayFromWs={(fn: () => void) => { playFromWs.current = fn; }}
         />
     );
 }

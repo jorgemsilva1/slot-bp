@@ -55,14 +55,8 @@ export const probabilityCalc = async (
     items: ProbabilityItem[],
     prizesIndexArr: number[],
 ): Promise<SlotReward> => {
-    // Make sure we only use items that have qty
-    const response = await axios.get(
-        `${
-            CONFIG.apiUrl
-        }/api/awards?filters[qty][$gt]=0`
-    );
 
-    let filteredItems = response.data.data.map((item) => ({...item.attributes, id: item.id}))
+    let filteredItems = items
 
     if (prizesIndexArr.length > 0) {
         filteredItems = filteredItems.filter(
@@ -79,6 +73,7 @@ export const probabilityCalc = async (
         (total, item) => total + item.qty,
         0
     );
+
     const totalRarity = filteredItems.reduce(
         (total, item) => total + 1 / item.rarity_level,
         0
@@ -92,10 +87,11 @@ export const probabilityCalc = async (
     // Adjust Probabilities based on Stock Levels
     filteredItems.forEach((item) => {
         item.adjusted_prob =
-            (item.base_probability / item.rarity_level / totalRarity / initialStock) *
+            ((item.base_probability / item.rarity_level / totalRarity / initialStock)) *
             1000;
     });
 
+    console.log(filteredItems);
     return getRandomItem(filteredItems);
 };
 
