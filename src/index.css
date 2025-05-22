@@ -62,6 +62,26 @@ a:hover {
     color: #535bf2;
 }
 
+::backdrop{
+    /*
+1) Base diagonal gradient
+2+3) Two large, soft radial “blobs” in the two colors, semi-transparent
+*/
+    background:
+            radial-gradient(circle at 20% 30%, rgba(250,168,25,0.8) 0%, transparent 40%),
+            radial-gradient(circle at 80% 60%, rgba(226,86,37,0.8) 0%, transparent 40%),
+            linear-gradient(60deg, #faa819, #e25625);
+
+    /* blend the blobs over the base */
+    background-blend-mode: screen;
+
+    /* make each layer much larger than the viewport so movement is gradual */
+    background-size: 200% 200%, 200% 200%, 100% 100%;
+    background-attachment: fixed;
+    /* animate all three layers’ positions */
+    animation: fluid 5s ease-in-out infinite;
+}
+
 
 body {
     margin: 0;
@@ -84,7 +104,7 @@ body {
 
     /* make each layer much larger than the viewport so movement is gradual */
     background-size: 200% 200%, 200% 200%, 100% 100%;
-
+    background-attachment: fixed;
     /* animate all three layers’ positions */
     animation: fluid 5s ease-in-out infinite;
 
