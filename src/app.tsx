@@ -45,33 +45,6 @@ export function App() {
         number_of_reels: 4,
     });
 
-    const wsRef = useRef<WebSocket | null>(null);
-    const playFromWs = useRef<() => void>(() => {});
-
-    useEffect(() => {
-        wsRef.current = new WebSocket("ws://localhost:1337");
-
-        wsRef.current.onopen = () => {
-            console.log("WebSocket connected");
-        };
-
-        wsRef.current.onclose = () => {
-            console.log("WebSocket disconnected");
-        };
-
-        wsRef.current.onerror = (err) => {
-            console.error("WebSocket error", err);
-        };
-
-        wsRef.current.onmessage = (msg) => {
-            if (playFromWs.current && !msg.data.includes('Welcome')) playFromWs.current();
-        };
-
-        return () => {
-            wsRef.current?.close();
-        };
-    }, []);
-
     const fetchData = useCallback(async () => {
         const response = await axios.get(
             `${
@@ -240,7 +213,6 @@ export function App() {
             config={slotConfig}
             awards={award}
             fetchInitialData={fetchInitialData}
-            setPlayFromWs={(fn: () => void) => { playFromWs.current = fn; }}
         />
     );
 }

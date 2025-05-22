@@ -25,7 +25,6 @@ type SlotProps = {
     fetchInitialData: any;
     awards: SlotReward[];
     config: SlotConfigType;
-    setPlayFromWs?: (fn: () => void) => void;
 };
 
 export type VariablesType = {
@@ -41,7 +40,6 @@ export const Slot = ({
     awards,
     onLose,
     fetchInitialData,
-    setPlayFromWs,
 }: SlotProps) => {
     const { config: _contextConfig, dispatch } = useConfigContext();
     const contextConfig = useRef({}).current;
@@ -52,6 +50,8 @@ export const Slot = ({
     const [gameOver, setGameOver] = useState(false);
     const [clickedPlay, setClickedPlay] = useState(false);
     const [numberOfPlays, setNumberOfPlays] = useState(null);
+    const [waitingForScan, setWaitingForScan] = useState(false);
+    const [scan, setScan] = useState('');
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
     const [showPrize, setShowPrize] = useState(false);
@@ -226,10 +226,18 @@ export const Slot = ({
             clickSoundRef.current.playSound();
             ambienceSoundRef.current.setVolume(0.02);
             await fetchInitialData(bool);
-            disabled.current = false;
+            if(bool) {
+                setWaitingForScan(true);
+            }
+            else
+                disabled.current = false;
         },
         [fetchInitialData]
     );
+
+    useEffect(() => {
+        document.getElementById('qrcode')?.focus()
+    }, [waitingForScan])
 
     const handlePlay = useCallback(() => {
         console.log('[Slot] handlePlay called');
@@ -251,6 +259,7 @@ export const Slot = ({
         setGameOver(false);
         setClickedPlay(false);
         setNumberOfPlays(null);
+        setWaitingForScan(false)
     }, [fetchInitialData]);
 
     const handleRollClick = useCallback(async () => {
@@ -261,6 +270,12 @@ export const Slot = ({
         }
     }, [awards?.length, handleReset, handleRoll]);
 
+    const handleScan = useCallback(() => {
+        console.log('called');
+        disabled.current = false;
+        setWaitingForScan(false)
+    }, [])
+
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
             if (event.key === '5' && awards?.length && !disabled.current) {
@@ -270,6 +285,13 @@ export const Slot = ({
             }
         });
     }, [awards?.length, gameOver, handleReset, handleRoll]);
+
+    const handleBlur = () => {
+        // delay focus call until after blur truly finishes
+        setTimeout(() => {
+            document.getElementById('qrcode')?.focus();
+        }, 0);
+    };
 
     const getProbs = useCallback(async () => {
         try {
@@ -314,20 +336,22 @@ export const Slot = ({
         }
     }, [numberOfPlays, endGame]);
 
-    useEffect(() => {
-        if (setPlayFromWs) {
-            setPlayFromWs(() => {
-                if (!clickedPlay) {
-                    handlePlay();
-                    handleClickUserType(true)
-                }else if (!contextConfig.value.num_of_plays)
-                    handleClickUserType(true)
-            });
-        }
-    }, [setPlayFromWs, clickedPlay, numberOfPlays, handlePlay]);
-
     return (
         <FullScreen handle={fsHandle}>
+
+            {((disabled.current || showPrize) && !gameOver)  && <div style={{
+                zIndex: '1',
+                opacity: '90%',
+                top: '18vh',
+                marginTop: '5px',
+                backgroundColor: '#232323',
+                width: '90%',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                height: '37dvh',
+                paddingBottom: '8px',
+                position: 'absolute',
+            }}></div>}
             <Container id={gameOver ? 'gameover-container' : ''}>
                 <BgController backgroundId={bg as any} />
                 {!gameOver ? (
@@ -346,15 +370,16 @@ export const Slot = ({
                                 ></span>
                             ))}
 
-                            <WonPrize className={showPrize ? '' : 'hide'}>
-                                <img src={PrizeDesktopBg} alt="" />
+
+                            <WonPrize className={showPrize ? '' : 'hide'} style={{position: 'absolute', zIndex: 9999}}>
+                                <div className="blob" style={{width: '60vw', height: '50vw', position: 'absolute'}}></div>
                                 <span>
                                     <p className="title">Ganhaste:</p>
                                     <p style={{ fontSize: '6rem' }}>
                                         {
                                             myArr.current[
-                                                myArr.current.length - 1
-                                            ]
+                                            myArr.current.length - 1
+                                                ]
                                         }
                                     </p>
                                 </span>
@@ -381,6 +406,17 @@ export const Slot = ({
                 handleActivateSound={activateAmbienceSound}
                 hasSound={hasSound}
             />
+            {waitingForScan && <div style={{top:'37%', width: '100%', textAlign: 'center', left:'50%', transform: 'translate(-50%, -50%)', fontWeight: 800, fontFamily: "Futura", fontSize: '9rem',zIndex: 9999, color: '#fff', padding: '5rem', position: 'absolute', textTransform: 'uppercase' }}>
+                Waiting for scan...
+                <input id={'qrcode'} value={scan} onChange={(e) => {
+                    setScan(e.target?.value)
+                }} type="text" style={{opacity: '0%', left: 0 , position:'absolute', fontSize: '10rem'}} onBlur={handleBlur} onKeyPress={event => {
+                    if (event.key === 'Enter') {
+                        handleScan()
+                    }
+                }}/>
+            </div>}
+
             <SoundStudio
                 refs={{
                     ambience: ambienceSoundRef,
@@ -411,17 +447,17 @@ const Container = styled.main`
         }
 
         ul {
-            margin-top: 15vh;
+            margin-top: 8vh;
             list-style: none;
             li {
                 text-align: center;
                 font-family: 'Futura';
                 font-weight: bold;
-                font-size: 64px;
+                font-size: 10rem;
 
                 &.prize {
-                    font-size: 84px;
-                    color: #e45525;
+                    font-size: 12rem;
+                    color: #232323;
                 }
             }
         }
@@ -447,7 +483,7 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
         background-image: ${({ _variables }) => `url(${_variables.reelImg})`};
         background-repeat: repeat-y;
         background-position-y: 0;
-
+        
         /** TEMP **/
         background-size: cover;
     }
