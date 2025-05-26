@@ -112,16 +112,16 @@ body {
 
 @keyframes fluid {
     0% {
-        background-position: 20% 30%, 80% 60%, 0% 0%;
+        background-position: 20% 0%, 0% 0%, 0% 0%;
     }
     33% {
-        background-position: 80% 20%, 10% 90%, 50% 50%;
+        background-position: 80% 0%, 0% 0%, 0% 0%;
     }
     66% {
-        background-position: 30% 80%, 90% 10%, 100% 100%;
+        background-position: 30% 0%, 0% 0%, 0% 0%;
     }
     100% {
-        background-position: 20% 30%, 80% 60%, 0% 0%;
+        background-position: 20% 0%, 0% 0%, 0% 0%;
     }
 }
 

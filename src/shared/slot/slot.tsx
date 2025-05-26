@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'preact/hooks';
 import { FullScreen, useFullScreenHandle } from 'react-full-screen';
 import styled from 'styled-components';
+import coin1 from '../../assets/coins/coin1.svg';
+import coin2 from '../../assets/coins/coin2.svg';
+import coin3 from '../../assets/coins/coin3.svg';
+import coin4 from '../../assets/coins/coin4.svg';
+import coin5 from '../../assets/coins/coin5.svg';
 import { SlotConfigType, SlotReward } from '../../app';
 import {
     arrayOfProbabilities,
@@ -18,6 +23,8 @@ import { BtnToggle } from './partials/BtnToggle';
 import PrizeDesktopBg from '../../assets/svg/prize_desktop.svg';
 import axios from 'axios';
 import { CONFIG } from '../../config/index.';
+import BlinkingBorderLights from '../../components/BlinkingBorderLights.tsx';
+import FallingCoins from '../../components/FallingCoins.tsx';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -371,18 +378,20 @@ export const Slot = ({
                             ))}
 
 
+                            {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5]} coinCount={70}
+                                              duration={2}></FallingCoins>}
                             <WonPrize className={showPrize ? '' : 'hide'} style={{position: 'absolute', zIndex: 9999}}>
-                                <div className="blob" style={{width: '60vw', height: '50vw', position: 'absolute'}}></div>
-                                <span>
-                                    <p className="title">Ganhaste:</p>
-                                    <p style={{ fontSize: '6rem' }}>
+                                <BlinkingBorderLights style={{position: 'absolute'}}></BlinkingBorderLights>
+                                <div style={{position: 'absolute', zIndex: 9999}}>
+                                    <p className="title" style={{ fontSize: '4rem', color: 'white', marginTop: '0rem' }}>Ganhaste</p>
+                                    <p style={{ fontSize: '6rem', color: '#232323', marginTop: '-4rem' }}>
                                         {
                                             myArr.current[
                                             myArr.current.length - 1
                                                 ]
                                         }
                                     </p>
-                                </span>
+                                </div>
                             </WonPrize>
                         </SlotMachine>
                         <RollBtnWrapper
