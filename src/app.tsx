@@ -207,7 +207,6 @@ export function App() {
                     awards = [];
                 }
             }
-
         } else {
 
             const normal = awardsRef.current?.rewards;
@@ -215,7 +214,7 @@ export function App() {
             awards = (normal && !isAllZero(normal)) ? normal : [];
         }
         return awards
-    }, [config.user_type, config.alreadyWon, hasWon]);
+    }, [config.user_type, config.alreadyWon, hasWon, handleOnLose]);
 
     useEffect(() => {
         fetchInitialData();
@@ -224,6 +223,7 @@ export function App() {
     return (
         <Slot
             onWin={handleOnWin}
+
             onLose={handleOnLose}
             config={slotConfig}
             awards={award}

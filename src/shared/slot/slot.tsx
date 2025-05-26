@@ -56,7 +56,7 @@ export const Slot = ({
     const fsHandle = useFullScreenHandle();
     const myArr = useRef([]);
     const disabled = useRef(true);
-    const [gameOver, setGameOver] = useState(false);
+    const gameOver = useRef(false);
     const [clickedPlay, setClickedPlay] = useState(false);
     const [numberOfPlays, setNumberOfPlays] = useState(null);
     const [waitingForScan, setWaitingForScan] = useState(false);
@@ -110,7 +110,7 @@ export const Slot = ({
         prizes.current = [];
         ambienceSoundRef.current.setVolume(0.2);
         setBg('go');
-        setGameOver(true);
+        gameOver.current = true;
     }, []);
 
     /**
@@ -191,6 +191,8 @@ export const Slot = ({
         ];
         // console.table(myArr.current);
 
+        let lost = false
+
         // Check winning status and define rules
         if (deltas.every((value, _, arr) => arr[0] === value)) {
             setShowPrize(true);
@@ -199,7 +201,6 @@ export const Slot = ({
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
-
             if (prizes.current.length === 1) {
                 // If first prize, add to the array and change probability to a quarter
                 dispatch(
@@ -212,11 +213,16 @@ export const Slot = ({
                 endGame();
             }
         } else {
+            lost = true
             onLose(isBacana);
             lostSoundRef.current.playSound();
         }
 
         disabled.current = false;
+        setTimeout(() => {
+            if(!disabled.current)
+                handleRollClick()
+        }, 300)
         setNumberOfPlays((prevValue) =>
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
@@ -232,27 +238,11 @@ export const Slot = ({
     ]);
 
     useEffect(() => {
-        console.log('[GAMEOVER]', contextConfig.value.user_type, inputs.isDeposit, inputs.isWon);
-        if(gameOver){
+        if(gameOver.current){
             setTimeout(handleRestart, 1000)
             setTimeout(run, 1500)
         }
-    }, [gameOver]);
-
-    useEffect(() => {
-        console.log('[AWARDS]', contextConfig.value.user_type, inputs.isDeposit, inputs.isWon);
-        if(awards && !gameOver && !disabled.current) {
-            handleRollClick();
-        }
-    }, [awards])
-
-    useEffect(() => {
-        if(myArr.current.length < 5 && !disabled.current) {
-            if(!myArr.current[myArr.current.length - 1] || (contextConfig.value.user_type !== 'bacana' || inputs.isWon)) {
-                handleRollClick();
-            }
-        }
-    }, [myArr.current])
+    }, [gameOver.current]);
 
     const handleClickUserType = useCallback(
         async (bool: boolean) => {
@@ -282,16 +272,14 @@ export const Slot = ({
     }, []);
 
     const handleRestart = useCallback(async () => {
-
-
         // Add the play
         await axios.post(`${CONFIG.apiUrl}/api/csv/append`,
             {
             data: {
-                myArr: JSON.stringify(myArr.current),
+                myArr: [...myArr.current, ...Array(5 - myArr.current.length).fill(null)].slice(0, 5),
+                isBacana: contextConfig.value.user_type === 'bacana',
                 isDeposit: inputs.isDeposit,
                 hasWon: inputs.isWon,
-                isBacana: contextConfig.value.user_type === 'bacana',
             },
         });
 
@@ -304,7 +292,7 @@ export const Slot = ({
         disabled.current = true;
         prizes.current = [];
         reelsRef.current = [];
-        setGameOver(false);
+        gameOver.current = false;
         setClickedPlay(false);
         setNumberOfPlays(null);
         setWaitingForScan(false)
@@ -320,7 +308,7 @@ export const Slot = ({
     }
 
     const handleRollClick = useCallback(async () => {
-        if (awards?.length && !disabled.current) {
+        if (awards?.length && !disabled.current && !gameOver.current) {
             handleReset();
             disabled.current = true;
             await handleRoll();
@@ -335,6 +323,7 @@ export const Slot = ({
             await fetchInitialData(true, qrcode.deposit, qrcode.won);
             disabled.current = false;
             setWaitingForScan(false);
+            handleRollClick()
         }
     }, [scan])
 
@@ -347,7 +336,7 @@ export const Slot = ({
                 await handleRoll();
             }
         });
-    }, [awards?.length, gameOver, handleReset, handleRoll]);
+    }, [awards?.length, gameOver.current, handleReset, handleRoll]);
 
     const handleBlur = () => {
         // delay focus call until after blur truly finishes
@@ -386,19 +375,23 @@ export const Slot = ({
         }
     }, [contextConfig.value.num_of_plays]);
 
+    useEffect(() => {
+        if(awards?.length)
+            handleRollClick()
+    }, [awards]);
+
+
     const run = async () => {
 
-        const isBac = Math.random() < 0.5
+        const isBac = Math.random() < 0.3
         const isDeposit = Math.random() < 0.5
         const isWon = Math.random() < 0.5
 
-        setInputs({ isDeposit, isWon})
+        setInputs({ isBac, isDeposit, isWon})
         setClickedPlay(true)
         await handleClickUserType(isBac)
         if(isBac){
             await handleScan(`{"deposit": ${isDeposit}, "won": ${isWon}}`)
-        }else {
-            handleRollClick()
         }
     }
 
@@ -422,7 +415,7 @@ export const Slot = ({
     return (
         <FullScreen handle={fsHandle}>
 
-            {((disabled.current || showPrize) && !gameOver)  && <div style={{
+            {((disabled.current || showPrize) && !gameOver.current)  && <div style={{
                 zIndex: '1',
                 opacity: '90%',
                 top: '18vh',
@@ -435,9 +428,9 @@ export const Slot = ({
                 paddingBottom: '8px',
                 position: 'absolute',
             }}></div>}
-            <Container id={gameOver ? 'gameover-container' : ''}>
+            <Container id={gameOver.current ? 'gameover-container' : ''}>
                 <BgController backgroundId={bg as any} />
-                {!gameOver ? (
+                {!gameOver.current ? (
                     <>
                         <SlotMachine _variables={config}>
                             {Array.from(
