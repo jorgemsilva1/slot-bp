@@ -6,6 +6,8 @@ import coin2 from '../../assets/coins/coin2.svg';
 import coin3 from '../../assets/coins/coin3.svg';
 import coin4 from '../../assets/coins/coin4.svg';
 import coin5 from '../../assets/coins/coin5.svg';
+import coin6 from '../../assets/coins/coin1.png';
+import coin7 from '../../assets/coins/coin2.png';
 import { SlotConfigType, SlotReward } from '../../app';
 import {
     arrayOfProbabilities,
@@ -378,7 +380,7 @@ export const Slot = ({
                             ))}
 
 
-                            {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5]} coinCount={70}
+                            {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5, coin6, coin7]} coinCount={70}
                                               duration={2}></FallingCoins>}
                             <WonPrize className={showPrize ? '' : 'hide'} style={{position: 'absolute', zIndex: 9999}}>
                                 <BlinkingBorderLights style={{position: 'absolute'}}></BlinkingBorderLights>

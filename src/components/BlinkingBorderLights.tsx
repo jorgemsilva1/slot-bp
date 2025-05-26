@@ -24,8 +24,8 @@ interface BlinkingBorderLightsProps {
  * - orderly: if true, lights blink in sequence around border; if false, random blink
  */
 const BlinkingBorderLights: React.FC<BlinkingBorderLightsProps> = ({
-                                                                       width = 800,
-                                                                       height = 485,
+                                                                       width = 1200,
+                                                                       height = 727.5,
                                                                        lightCount = 30,
                                                                        baseRadius = 20,
                                                                        animationDuration = 1,
