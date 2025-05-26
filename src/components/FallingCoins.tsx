@@ -51,7 +51,7 @@ const FallingCoins: React.FC<FallingCoinsProps> = ({
                 height: '100vh',
                 pointerEvents: 'none',
                 overflow: 'hidden',
-                zIndex: 9999,
+                zIndex: 999999999,
             }}
         >
             <style>{`
