@@ -158,7 +158,7 @@ export const Slot = ({
         let probability;
         if (hasOnePrizeWon) {
             if (isBacana) {
-                probability = myArr.current.length <= 1 ? 0 : contextConfig.value.bacana_user_second_chance;
+                probability = myArr.current.length <= 1 ? 0 : inputs.isDeposit ? contextConfig.value.deposit_bacana_user_second_chance : contextConfig.value.bacana_user_second_chance;
             } else {
                 probability = myArr.current.length <= 3 ? 0 : contextConfig.value.non_bacana_user_second_chance;
             }
@@ -349,7 +349,7 @@ export const Slot = ({
         try {
             // Get slot probs
             const response = await axios.get(
-                `${CONFIG.apiUrl}/api/configs?fields[0]=bacana_user_chance&fields[1]=non_bacana_user_chance&fields[2]=bacana_user_second_chance&fields[3]=non_bacana_user_second_chance&fields[4]=active`
+                `${CONFIG.apiUrl}/api/configs`
             );
 
             const activeSlot = response.data.data.find(
@@ -357,18 +357,20 @@ export const Slot = ({
             );
 
             contextConfig.value.bacana_user_second_chance =activeSlot.attributes.bacana_user_second_chance
+            contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
             contextConfig.value.non_bacana_user_second_chance =activeSlot.attributes.non_bacana_user_second_chance
 
             probArr.current = arrayOfProbabilities(
                 contextConfig.value.num_of_plays,
                 contextConfig.value.user_type === 'regular'
                     ? activeSlot.attributes.non_bacana_user_chance
-                    : activeSlot.attributes.bacana_user_chance
+                    : inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance
             );
 
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
+                deposit: activeSlot.attributes.deposit_bacana_user_chance
             };
         } catch (err) {
             alert('Ocorreu um erro com as probs.');
