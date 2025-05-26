@@ -390,8 +390,11 @@ export const Slot = ({
         setInputs({ isBac, isDeposit, isWon})
         setClickedPlay(true)
         await handleClickUserType(isBac)
+        console.log(isBac);
         if(isBac){
             await handleScan(`{"deposit": ${isDeposit}, "won": ${isWon}}`)
+        }else{
+            handleRollClick()
         }
     }
 
