@@ -63,6 +63,7 @@ export const Slot = ({
     const [scan, setScan] = useState('');
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
+    const [inputs, setInputs] = useState({});
     const [showPrize, setShowPrize] = useState(false);
 
     const [probs, setProbs] = useState({
@@ -219,6 +220,7 @@ export const Slot = ({
         setNumberOfPlays((prevValue) =>
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
+
     }, [
         contextConfig.value.user_type,
         contextConfig.value.win_percentage,
@@ -229,17 +231,40 @@ export const Slot = ({
         onLose,
     ]);
 
+    useEffect(() => {
+        if(gameOver){
+            setTimeout(handleRestart, 1000)
+            setTimeout(run, 1500)
+        }
+    }, [gameOver]);
+
+    useEffect(() => {
+        if(awards && !gameOver && !disabled.current) {
+            handleRollClick();
+        }
+    }, [awards])
+
+    useEffect(() => {
+        if(myArr.current.length < 5 && !disabled.current) {
+            if(!myArr.current[myArr.current.length - 1] || contextConfig.value.user_type !== 'bacana') {
+                handleRollClick();
+            }
+        }
+    }, [myArr.current])
+
     const handleClickUserType = useCallback(
         async (bool: boolean) => {
             setBg('two');
             clickSoundRef.current.playSound();
             ambienceSoundRef.current.setVolume(0.02);
-            await fetchInitialData(bool);
+                setNumberOfPlays(5);
             if(bool) {
                 setWaitingForScan(true);
             }
-            else
+            else {
+                await fetchInitialData(false)
                 disabled.current = false;
+            }
         },
         [fetchInitialData]
     );
@@ -249,20 +274,32 @@ export const Slot = ({
     }, [waitingForScan])
 
     const handlePlay = useCallback(() => {
-        console.log('[Slot] handlePlay called');
         setClickedPlay(true);
         ambienceSoundRef.current.setVolume(0.04);
         clickSoundRef.current.playSound();
     }, []);
 
     const handleRestart = useCallback(async () => {
+
+
+        // Add the play
+        await axios.post(`${CONFIG.apiUrl}/api/csv/append`,
+            {
+            data: {
+                myArr: JSON.stringify(myArr.current),
+                isDeposit: inputs.isDeposit,
+                hasWon: inputs.isWon,
+                isBacana: contextConfig.value.user_type === 'bacana',
+            },
+        });
+
         setBg('one');
         setShowPrize(false);
         clickSoundRef.current.playSound();
         ambienceSoundRef.current.setVolume(0.2);
         await fetchInitialData();
         myArr.current = [];
-        disabled.current = [];
+        disabled.current = true;
         prizes.current = [];
         reelsRef.current = [];
         setGameOver(false);
@@ -270,6 +307,15 @@ export const Slot = ({
         setNumberOfPlays(null);
         setWaitingForScan(false)
     }, [fetchInitialData]);
+
+    const isJson = (str: string)  => {
+        try {
+            JSON.parse(str);
+        } catch (e) {
+            return false;
+        }
+        return true;
+    }
 
     const handleRollClick = useCallback(async () => {
         if (awards?.length && !disabled.current) {
@@ -279,11 +325,17 @@ export const Slot = ({
         }
     }, [awards?.length, handleReset, handleRoll]);
 
-    const handleScan = useCallback(() => {
-        console.log(scan);
-        disabled.current = false;
-        setWaitingForScan(false)
+    const handleScan = useCallback(async (force = null) => {
+        let qrcode = force ?? scan.replaceAll('Ç', ':').replaceAll('^','"').replace('`', '}').replace('ª', '{');
+        if(isJson(qrcode)) {
+            qrcode = JSON.parse(qrcode);
+
+            await fetchInitialData(true, qrcode.deposit, qrcode.won);
+            disabled.current = false;
+            setWaitingForScan(false);
+        }
     }, [scan])
+
 
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
@@ -332,6 +384,22 @@ export const Slot = ({
         }
     }, [contextConfig.value.num_of_plays]);
 
+    const run = async () => {
+
+        const isBac = Math.random() < 0.5
+        const isDeposit = Math.random() < 0.5
+        const isWon = Math.random() < 0.5
+
+        setInputs({ isDeposit, isWon})
+        setClickedPlay(true)
+        await handleClickUserType(isBac)
+        if(isBac){
+            await handleScan(`{"deposit": ${isDeposit}, "won": ${isWon}}`)
+        }else {
+            handleRollClick()
+        }
+    }
+
     useEffect(() => {
         if (contextConfig.value.num_of_plays) {
             setNumberOfPlays(contextConfig.value.num_of_plays);
@@ -344,6 +412,10 @@ export const Slot = ({
             endGame();
         }
     }, [numberOfPlays, endGame]);
+
+    useEffect(() => {
+        run()
+    }, [])
 
     return (
         <FullScreen handle={fsHandle}>

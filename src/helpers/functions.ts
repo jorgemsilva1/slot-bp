@@ -91,7 +91,6 @@ export const probabilityCalc = async (
             1000;
     });
 
-    console.log(filteredItems);
     return getRandomItem(filteredItems);
 };
 
@@ -104,8 +103,6 @@ export const configTheme = (
         iconHeight = 0,
         iconWidth = 0,
         rotations = 0;
-
-    console.log(theme);
 
     switch (theme) {
         case 'classic':

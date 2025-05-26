@@ -1,7 +1,6 @@
 import styled from 'styled-components';
 
 export const PrizeList = ({ arr }: { arr: any[] }) => {
-    console.log(arr);
     return (
         <>
             <div className={'blob'} style={{backgroundColor: '#232323', width: '30vw', height: '25vw', position:'absolute', zIndex: 99, top: '19vh', fontSize: '6rem', display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
