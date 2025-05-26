@@ -280,10 +280,10 @@ export const Slot = ({
     }, [awards?.length, handleReset, handleRoll]);
 
     const handleScan = useCallback(() => {
-        console.log('called');
+        console.log(scan);
         disabled.current = false;
         setWaitingForScan(false)
-    }, [])
+    }, [scan])
 
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
