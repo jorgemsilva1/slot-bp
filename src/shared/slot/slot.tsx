@@ -232,6 +232,7 @@ export const Slot = ({
     ]);
 
     useEffect(() => {
+        console.log('[GAMEOVER]', contextConfig.value.user_type, inputs.isDeposit, inputs.isWon);
         if(gameOver){
             setTimeout(handleRestart, 1000)
             setTimeout(run, 1500)
@@ -239,6 +240,7 @@ export const Slot = ({
     }, [gameOver]);
 
     useEffect(() => {
+        console.log('[AWARDS]', contextConfig.value.user_type, inputs.isDeposit, inputs.isWon);
         if(awards && !gameOver && !disabled.current) {
             handleRollClick();
         }
@@ -246,7 +248,7 @@ export const Slot = ({
 
     useEffect(() => {
         if(myArr.current.length < 5 && !disabled.current) {
-            if(!myArr.current[myArr.current.length - 1] || contextConfig.value.user_type !== 'bacana') {
+            if(!myArr.current[myArr.current.length - 1] || (contextConfig.value.user_type !== 'bacana' || inputs.isWon)) {
                 handleRollClick();
             }
         }
