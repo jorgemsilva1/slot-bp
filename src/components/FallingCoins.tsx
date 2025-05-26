@@ -48,7 +48,7 @@ const FallingCoins: React.FC<FallingCoinsProps> = ({
                 top: -200,
                 left: 0,
                 width: '100vw',
-                height: '100vh',
+                height: '150vh',
                 pointerEvents: 'none',
                 overflow: 'hidden',
                 zIndex: 999999999,
@@ -58,7 +58,7 @@ const FallingCoins: React.FC<FallingCoinsProps> = ({
         @keyframes fall {
           0% { transform: translateY(-50px); opacity: 0; }
           10% { opacity: 1; }
-          100% { transform: translateY(100vh); opacity: 0; }
+          100% { transform: translateY(140vh); }
         }
         .coin {
           position: absolute;
