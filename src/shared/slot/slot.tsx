@@ -158,14 +158,9 @@ export const Slot = ({
 
         rollSoundRef.current.playSound();
 
-        const willAlwaysWin =
-            contextConfig.value.win_percentage === 'auto'
-                ? false
-                : shouldBeTrue(probability);
-
         const item = await probabilityCalc(awards, prizes.current);
 
-        const winningSymbolIndex = willAlwaysWin ? item.index : null;
+        const winningSymbolIndex = probability ? item.index : null;
 
         const deltas = await Promise.all(
             reelsRef.current
