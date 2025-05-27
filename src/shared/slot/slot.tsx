@@ -364,7 +364,7 @@ export const Slot = ({
 
             probArr.current = shuffle(Array(contextConfig.value.num_of_plays)
                 .fill(0)
-                .fill(100, 0, count)).sort(() => Math.random() - 0.5);
+                .fill(100, 0, count))
 
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
@@ -380,6 +380,26 @@ export const Slot = ({
         if(awards?.length)
             handleRollClick()
     }, [awards]);
+
+    function shuffle(array: any[]) {
+        let currentIndex = array.length,
+            randomIndex;
+
+        // While there remain elements to shuffle.
+        while (currentIndex > 0) {
+            // Pick a remaining element.
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+
+            // And swap it with the current element.
+            [array[currentIndex], array[randomIndex]] = [
+                array[randomIndex],
+                array[currentIndex],
+            ];
+        }
+
+        return array;
+    }
 
 
     const run = async () => {
