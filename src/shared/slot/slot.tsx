@@ -350,19 +350,19 @@ export const Slot = ({
             contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
             contextConfig.value.non_bacana_user_second_chance =activeSlot.attributes.non_bacana_user_second_chance
 
-            const finalProb = contextConfig.value.user_type === 'regular'
-                ? activeSlot.attributes.non_bacana_user_chance
-                : inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance
-            const finalProbSecond = contextConfig.value.user_type === 'regular' ?
-                activeSlot.attributes.non_bacana_user_second_chance :
-                inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance
+            const finalProb = inputs.isBac
+                ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance) :
+                activeSlot.attributes.non_bacana_user_chance
+            const finalProbSecond = inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
+                : activeSlot.attributes.non_bacana_user_second_chance
+
 
             const wins = Math.random() < (finalProb / 100);
             const winsSecond = Math.random() < (finalProbSecond / 100);
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            probArr.current = shuffle(Array(contextConfig.value.num_of_plays)
+            probArr.current = shuffle(Array(5)
                 .fill(0)
                 .fill(100, 0, count))
 
@@ -381,24 +381,14 @@ export const Slot = ({
             handleRollClick()
     }, [awards]);
 
-    function shuffle(array: any[]) {
-        let currentIndex = array.length,
-            randomIndex;
-
-        // While there remain elements to shuffle.
-        while (currentIndex > 0) {
-            // Pick a remaining element.
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex--;
-
-            // And swap it with the current element.
-            [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex],
-                array[currentIndex],
-            ];
+    function shuffle(arr: any[]) {
+        for (let i = arr.length - 1; i > 0; i--) {
+            // j is a random integer from 0 to i
+            const j = Math.floor(Math.random() * (i + 1));
+            // swap arr[i] and arr[j]
+            [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-
-        return array;
+        return arr;
     }
 
 
@@ -411,7 +401,6 @@ export const Slot = ({
         setInputs({ isBac, isDeposit, isWon})
         setClickedPlay(true)
         await handleClickUserType(isBac)
-        console.log(isBac);
         if(isBac){
             await handleScan(`{"deposit": ${isDeposit}, "won": ${isWon}}`)
         }else{
