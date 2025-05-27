@@ -204,10 +204,10 @@ export const Slot = ({
         }
 
         disabled.current = false;
-        setTimeout(() => {
-            if(!disabled.current)
-                handleRollClick()
-        }, 300)
+        //setTimeout(() => {
+        //    if(!disabled.current)
+        //        handleRollClick()
+        //}, 300)
         setNumberOfPlays((prevValue) =>
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
@@ -222,12 +222,12 @@ export const Slot = ({
         onLose,
     ]);
 
-    useEffect(() => {
-        if(gameOver.current){
-            setTimeout(handleRestart, 1000)
-            setTimeout(run, 1500)
-        }
-    }, [gameOver.current]);
+    //useEffect(() => {
+    //    if(gameOver.current){
+    //        setTimeout(handleRestart, 1000)
+    //        setTimeout(run, 1500)
+    //    }
+    //}, [gameOver.current]);
 
     const handleClickUserType = useCallback(
         async (bool: boolean) => {
@@ -309,7 +309,7 @@ export const Slot = ({
             await fetchInitialData(true, qrcode.deposit, qrcode.won);
             disabled.current = false;
             setWaitingForScan(false);
-            handleRollClick()
+            //handleRollClick()
         }
     }, [scan])
 
@@ -341,6 +341,7 @@ export const Slot = ({
             const activeSlot = response.data.data.find(
                 (el: any) => el.attributes.active
             );
+            console.log(awards);
 
             contextConfig.value.bacana_user_second_chance =activeSlot.attributes.bacana_user_second_chance
             contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
@@ -349,9 +350,8 @@ export const Slot = ({
             const finalProb = inputs.isBac
                 ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance) :
                 activeSlot.attributes.non_bacana_user_chance
-            const finalProbSecond = inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
-                : activeSlot.attributes.non_bacana_user_second_chance
-
+            const finalProbSecond = awards.length > 1 ? (inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
+                : activeSlot.attributes.non_bacana_user_second_chance) : 0
 
             const wins = Math.random() < (finalProb / 100);
             const winsSecond = Math.random() < (finalProbSecond / 100);
@@ -372,10 +372,10 @@ export const Slot = ({
         }
     }, [contextConfig.value.num_of_plays]);
 
-    useEffect(() => {
-        if(awards?.length)
-            handleRollClick()
-    }, [awards]);
+    //useEffect(() => {
+    //    if(awards?.length)
+    //        handleRollClick()
+    //}, [awards]);
 
     function shuffle(arr: any[]) {
         for (let i = arr.length - 1; i > 0; i--) {
@@ -418,7 +418,7 @@ export const Slot = ({
     }, [numberOfPlays, endGame]);
 
     useEffect(() => {
-        run()
+        //run()
     }, [])
 
     return (
