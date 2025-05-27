@@ -150,21 +150,11 @@ export const Slot = ({
 
     const handleRoll = useCallback(async () => {
         disabled.current = true;
-        const hasOnePrizeWon = prizes.current.length === 1;
         const isBacana = contextConfig.value.user_type === 'bacana';
 
         // 1. If it is second play, add a 15% chance on every round
         // 2. If non-user, and has won already one prize, can only win on the 4/5th play
-        let probability;
-        if (hasOnePrizeWon) {
-            if (isBacana) {
-                probability = myArr.current.length <= 1 ? 0 : inputs.isDeposit ? contextConfig.value.deposit_bacana_user_second_chance : contextConfig.value.bacana_user_second_chance;
-            } else {
-                probability = myArr.current.length <= 3 ? 0 : contextConfig.value.non_bacana_user_second_chance;
-            }
-        } else {
-            probability = probArr.current[myArr.current.length];
-        }
+        const probability = probArr.current[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
@@ -360,12 +350,21 @@ export const Slot = ({
             contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
             contextConfig.value.non_bacana_user_second_chance =activeSlot.attributes.non_bacana_user_second_chance
 
-            probArr.current = arrayOfProbabilities(
-                contextConfig.value.num_of_plays,
-                contextConfig.value.user_type === 'regular'
-                    ? activeSlot.attributes.non_bacana_user_chance
-                    : inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance
-            );
+            const finalProb = contextConfig.value.user_type === 'regular'
+                ? activeSlot.attributes.non_bacana_user_chance
+                : inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance
+            const finalProbSecond = contextConfig.value.user_type === 'regular' ?
+                activeSlot.attributes.non_bacana_user_second_chance :
+                inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance
+
+            const wins = Math.random() < (finalProb / 100);
+            const winsSecond = Math.random() < (finalProbSecond / 100);
+
+            const count = wins ? 1 + Number(winsSecond) : 0;
+
+            probArr.current = Array(contextConfig.value.num_of_plays)
+                .fill(0)
+                .fill(100, 0, count);
 
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
