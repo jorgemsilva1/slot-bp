@@ -234,14 +234,15 @@ export const Slot = ({
             setBg('two');
             clickSoundRef.current.playSound();
             ambienceSoundRef.current.setVolume(0.02);
-                setNumberOfPlays(5);
+            setNumberOfPlays(5);
             if(bool) {
-                setWaitingForScan(true);
+                await setWaitingForScan(true);
             }
             else {
                 await fetchInitialData(false)
                 disabled.current = false;
             }
+            getProbs()
         },
         [fetchInitialData]
     );
