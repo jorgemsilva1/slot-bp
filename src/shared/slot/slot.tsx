@@ -362,9 +362,9 @@ export const Slot = ({
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            probArr.current = Array(contextConfig.value.num_of_plays)
+            probArr.current = shuffle(Array(contextConfig.value.num_of_plays)
                 .fill(0)
-                .fill(100, 0, count);
+                .fill(100, 0, count)).sort(() => Math.random() - 0.5);
 
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
@@ -384,7 +384,7 @@ export const Slot = ({
 
     const run = async () => {
 
-        const isBac = Math.random() < 0.3
+        const isBac = Math.random() < 0.5
         const isDeposit = Math.random() < 0.5
         const isWon = Math.random() < 0.5
 
