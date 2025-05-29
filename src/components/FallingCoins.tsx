@@ -24,7 +24,7 @@ interface FallingCoinsProps {
 const FallingCoins: React.FC<FallingCoinsProps> = ({
                                                        coinSrcs,
                                                        coinCount = 20,
-                                                       duration = 2,
+                                                       duration = 100,
                                                    }) => {
     // Generate random coin configs once
     const coins: CoinConfig[] = useMemo(() => {
@@ -32,7 +32,7 @@ const FallingCoins: React.FC<FallingCoinsProps> = ({
         for (let i = 0; i < coinCount; i++) {
             arr.push({
                 src: coinSrcs[Math.floor(Math.random() * coinSrcs.length)],
-                size: 100 + Math.random() * 60, // size between 20-50px
+                size: 100 + Math.random() * 760, // size between 20-50px
                 left: Math.random() * 100,      // percentage across viewport
                 duration: duration * (0.5 + Math.random() * 0.4), // ±20%
                 delay: Math.random() * duration,
