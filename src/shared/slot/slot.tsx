@@ -161,7 +161,7 @@ export const Slot = ({
 
         rollSoundRef.current.playSound();
 
-        const item = await probabilityCalc(awardss, prizes.current);
+        const item = await probabilityCalc(awardss, prizes.current, inputs.isBac);
 
         const winningSymbolIndex = probability ? item.index : null;
 
@@ -292,7 +292,7 @@ export const Slot = ({
     }, [awardss?.length, handleReset, handleRoll]);
 
     const handleScan = useCallback(async (force = null) => {
-        let qrcode = scan //scan.replaceAll('Ç', ':').replaceAll('^','"').replace('`', '}').replace('ª', '{');
+        let qrcode = scan.replaceAll('Ç', ':').replaceAll('ª','"').replace('`', '}').replace('*', '{');
         if(isJson(qrcode)) {
             qrcode = JSON.parse(qrcode);
             setInputs({isBac: true, isDeposit: qrcode.deposit, isWon: qrcode.won});

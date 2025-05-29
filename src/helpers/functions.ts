@@ -54,6 +54,7 @@ type ProbabilityItem = { base_probability: number } & SlotReward;
 export const probabilityCalc = async (
     items: ProbabilityItem[],
     prizesIndexArr: number[],
+    isBac: boolean
 ): Promise<SlotReward> => {
 
     let filteredItems = items
@@ -75,7 +76,7 @@ export const probabilityCalc = async (
     );
 
     const totalRarity = filteredItems.reduce(
-        (total, item) => total + 1 / item.rarity_level,
+        (total, item) => total + 1 / (isBac ? item.rarity_level : (item.rarity_level / item.multiplier)),
         0
     );
 
@@ -87,7 +88,7 @@ export const probabilityCalc = async (
     // Adjust Probabilities based on Stock Levels
     filteredItems.forEach((item) => {
         item.adjusted_prob =
-            ((item.base_probability / item.rarity_level / totalRarity / initialStock)) *
+            ((item.base_probability / (isBac ? item.rarity_level : (item.rarity_level / item.multiplier)) / totalRarity / initialStock)) *
             1000;
     });
 
