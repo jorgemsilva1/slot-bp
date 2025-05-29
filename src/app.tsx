@@ -223,10 +223,9 @@ export function App() {
     return (
         <Slot
             onWin={handleOnWin}
-
             onLose={handleOnLose}
             config={slotConfig}
-            awards={award}
+            awards={awardsRef}
             fetchInitialData={fetchInitialData}
         />
     );

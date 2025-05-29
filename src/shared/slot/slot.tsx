@@ -57,6 +57,8 @@ export const Slot = ({
     const myArr = useRef([]);
     const disabled = useRef(true);
     const gameOver = useRef(false);
+    const [probss, setProbss] = useState([])
+    const [awardss, setAwardss] = useState([])
     const [clickedPlay, setClickedPlay] = useState(false);
     const [numberOfPlays, setNumberOfPlays] = useState(null);
     const [waitingForScan, setWaitingForScan] = useState(false);
@@ -64,6 +66,8 @@ export const Slot = ({
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
     const [inputs, setInputs] = useState({});
+    const [rolling, setRolling] = useState(false);
+    const [empty, setEmpty] = useState(false);
     const [showPrize, setShowPrize] = useState(false);
 
     const [probs, setProbs] = useState({
@@ -149,16 +153,15 @@ export const Slot = ({
     );
 
     const handleRoll = useCallback(async () => {
+        setRolling(true);
         disabled.current = true;
-        const isBacana = contextConfig.value.user_type === 'bacana';
-
         // 1. If it is second play, add a 15% chance on every round
         // 2. If non-user, and has won already one prize, can only win on the 4/5th play
-        const probability = probArr.current[myArr.current.length];
+        const probability = probss[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
-        const item = await probabilityCalc(awards, prizes.current);
+        const item = await probabilityCalc(awardss, prizes.current);
 
         const winningSymbolIndex = probability ? item.index : null;
 
@@ -174,15 +177,12 @@ export const Slot = ({
             ...myArr.current,
             typeof winningSymbolIndex === 'number' ? item.name : null,
         ];
-        // console.table(myArr.current);
-
-        let lost = false
 
         // Check winning status and define rules
         if (deltas.every((value, _, arr) => arr[0] === value)) {
             setShowPrize(true);
 
-            onWin(item, isBacana);
+            onWin(item, inputs.isBac);
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
@@ -198,36 +198,24 @@ export const Slot = ({
                 endGame();
             }
         } else {
-            lost = true
-            onLose(isBacana);
+            onLose(inputs.isBac);
             lostSoundRef.current.playSound();
         }
-
         disabled.current = false;
-        //setTimeout(() => {
-        //    if(!disabled.current)
-        //        handleRollClick()
-        //}, 300)
         setNumberOfPlays((prevValue) =>
             typeof prevValue === 'number' ? prevValue - 1 : null
         );
-
+        setRolling(false);
     }, [
         contextConfig.value.user_type,
         contextConfig.value.win_percentage,
-        awards,
+        awardss,
         roll,
         onWin,
         endGame,
         onLose,
+        probss,
     ]);
-
-    //useEffect(() => {
-    //    if(gameOver.current){
-    //        setTimeout(handleRestart, 1000)
-    //        setTimeout(run, 1500)
-    //    }
-    //}, [gameOver.current]);
 
     const handleClickUserType = useCallback(
         async (bool: boolean) => {
@@ -239,10 +227,10 @@ export const Slot = ({
                 await setWaitingForScan(true);
             }
             else {
+                setInputs({isBac:false, isDeposit: false, isWon: false})
                 await fetchInitialData(false)
                 disabled.current = false;
             }
-            getProbs()
         },
         [fetchInitialData]
     );
@@ -279,6 +267,9 @@ export const Slot = ({
         prizes.current = [];
         reelsRef.current = [];
         gameOver.current = false;
+        setInputs({})
+        setScan('')
+        setProbss([])
         setClickedPlay(false);
         setNumberOfPlays(null);
         setWaitingForScan(false)
@@ -294,18 +285,17 @@ export const Slot = ({
     }
 
     const handleRollClick = useCallback(async () => {
-        if (awards?.length && !disabled.current && !gameOver.current) {
+        if (awardss?.length && !disabled.current && !gameOver.current) {
             handleReset();
-            disabled.current = true;
             await handleRoll();
         }
-    }, [awards?.length, handleReset, handleRoll]);
+    }, [awardss?.length, handleReset, handleRoll]);
 
     const handleScan = useCallback(async (force = null) => {
-        let qrcode = force ?? scan.replaceAll('Ç', ':').replaceAll('^','"').replace('`', '}').replace('ª', '{');
+        let qrcode = scan //scan.replaceAll('Ç', ':').replaceAll('^','"').replace('`', '}').replace('ª', '{');
         if(isJson(qrcode)) {
             qrcode = JSON.parse(qrcode);
-
+            setInputs({isBac: true, isDeposit: qrcode.deposit, isWon: qrcode.won});
             await fetchInitialData(true, qrcode.deposit, qrcode.won);
             disabled.current = false;
             setWaitingForScan(false);
@@ -316,13 +306,13 @@ export const Slot = ({
 
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
-            if (event.key === '5' && awards?.length && !disabled.current) {
+            if (event.key === '5' && awardss?.length && !disabled.current) {
                 handleReset();
                 disabled.current = true;
                 await handleRoll();
             }
         });
-    }, [awards?.length, gameOver.current, handleReset, handleRoll]);
+    }, [awardss?.length, gameOver.current, handleReset, handleRoll]);
 
     const handleBlur = () => {
         // delay focus call until after blur truly finishes
@@ -341,7 +331,6 @@ export const Slot = ({
             const activeSlot = response.data.data.find(
                 (el: any) => el.attributes.active
             );
-            console.log(awards);
 
             contextConfig.value.bacana_user_second_chance =activeSlot.attributes.bacana_user_second_chance
             contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
@@ -350,18 +339,22 @@ export const Slot = ({
             const finalProb = inputs.isBac
                 ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance) :
                 activeSlot.attributes.non_bacana_user_chance
-            const finalProbSecond = awards.length > 1 ? (inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
-                : activeSlot.attributes.non_bacana_user_second_chance) : 0
+            const finalProbSecond = (inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
+                : activeSlot.attributes.non_bacana_user_second_chance)
 
-            const wins = Math.random() < (finalProb / 100);
-            const winsSecond = Math.random() < (finalProbSecond / 100);
+            const winRand = Math.random()
+            const winSecondRand = Math.random()
+            const wins = winRand < (finalProb / 100);
+            const winsSecond = winSecondRand < (finalProbSecond / 100);
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            probArr.current = shuffle(Array(5)
+            const arr = shuffle(Array(5)
                 .fill(0)
                 .fill(100, 0, count))
 
+            setProbss(arr)
+            setInputs((prev) => ({...prev, wins,winsSecond, winRand, winSecondRand}));
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
@@ -370,12 +363,7 @@ export const Slot = ({
         } catch (err) {
             alert('Ocorreu um erro com as probs.');
         }
-    }, [contextConfig.value.num_of_plays]);
-
-    //useEffect(() => {
-    //    if(awards?.length)
-    //        handleRollClick()
-    //}, [awards]);
+    }, [awardss, inputs]);
 
     function shuffle(arr: any[]) {
         for (let i = arr.length - 1; i > 0; i--) {
@@ -387,29 +375,59 @@ export const Slot = ({
         return arr;
     }
 
+    const getAwards = useCallback(() => {
+        let finalAwards = null
+        const isAllZero = (arr) => Array.isArray(arr) && arr.every(item => item.qty === 0);
 
-    const run = async () => {
+        if (inputs.isBac) {
+            const force = awards.current.forceRewardsBacana;
+            const forceDeposit = awards.current.forceRewardsBacanaDeposit;
+            const bacana = awards.current.rewardsBacana;
+            const bacanaDeposit = awards.current.rewardsBacanaDeposit;
+            if(inputs.isDeposit){
+                if (!inputs.isWon && !prizes.current.length && forceDeposit && !isAllZero(forceDeposit)) {
+                    finalAwards = forceDeposit;
+                } else if (bacanaDeposit && !isAllZero(bacanaDeposit)) {
+                    finalAwards = bacanaDeposit;
+                } else {
+                    finalAwards = [];
+                }
+            }
+            else{
+                if (!inputs.isWon && !prizes.current.length && force && !isAllZero(force)) {
+                    finalAwards = force;
+                } else if (bacana && !isAllZero(bacana)) {
+                    finalAwards = bacana;
+                } else {
+                    finalAwards = [];
+                }
+            }
+        } else {
 
-        const isBac = Math.random() < 0.5
-        const isDeposit = Math.random() < 0.5
-        const isWon = Math.random() < 0.5
+            const normal = awards.current?.rewards;
 
-        setInputs({ isBac, isDeposit, isWon})
-        setClickedPlay(true)
-        await handleClickUserType(isBac)
-        if(isBac){
-            await handleScan(`{"deposit": ${isDeposit}, "won": ${isWon}}`)
-        }else{
-            handleRollClick()
+            finalAwards = (normal && !isAllZero(normal)) ? normal : [];
         }
-    }
+        if(finalAwards.length === 0)
+            setEmpty(true)
+        setAwardss(finalAwards)
+        }, [inputs]);
 
     useEffect(() => {
-        if (contextConfig.value.num_of_plays) {
-            setNumberOfPlays(contextConfig.value.num_of_plays);
-            getProbs();
+        if(awardss.length > 0 && probss.length === 0)
+            getProbs()
+    }, [awardss]);
+
+    useEffect(() => {
+        if("isBac" in inputs) {
+            getAwards();
         }
-    }, [contextConfig.value.num_of_plays, getProbs]);
+    }, [inputs.isBac]);
+
+    useEffect(() => {
+        if(prizes.current.length > 0 && inputs.isBac && !inputs.isWon)
+            getAwards();
+    }, [prizes.current]);
 
     useEffect(() => {
         if (numberOfPlays === 0) {
@@ -417,14 +435,11 @@ export const Slot = ({
         }
     }, [numberOfPlays, endGame]);
 
-    useEffect(() => {
-        //run()
-    }, [])
-
     return (
         <FullScreen handle={fsHandle}>
 
-            {((disabled.current || showPrize) && !gameOver.current)  && <div style={{
+
+            {(((disabled.current && !rolling) || showPrize) && !gameOver.current)  && <div style={{
                 zIndex: '1',
                 opacity: '90%',
                 top: '18vh',
@@ -503,6 +518,8 @@ export const Slot = ({
                     }
                 }}/>
             </div>}
+
+
 
             <SoundStudio
                 refs={{
