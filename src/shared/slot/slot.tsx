@@ -292,7 +292,7 @@ export const Slot = ({
     }, [awardss?.length, handleReset, handleRoll]);
 
     const handleScan = useCallback(async (force = null) => {
-        let qrcode = scan.replaceAll('Ç', ':').replaceAll('ª','"').replace('`', '}').replace('*', '{');
+        let qrcode = scan.replaceAll('Ç', ':').replaceAll('ª','"').replace('`', '}').replace('*', '{') + '}';
         if(isJson(qrcode)) {
             qrcode = JSON.parse(qrcode);
             setInputs({isBac: true, isDeposit: qrcode.deposit, isWon: qrcode.won});
@@ -512,7 +512,7 @@ export const Slot = ({
                 Waiting for scan...
                 <input id={'qrcode'} value={scan} onChange={(e) => {
                     setScan(e.target?.value)
-                }} type="text" style={{opacity: '0%', left: 0 , position:'absolute', fontSize: '10rem'}} onBlur={handleBlur} onKeyPress={event => {
+                }} type="text" autocomplete="off" style={{opacity: '0%', left: 0 , position:'absolute', fontSize: '10rem'}} onBlur={handleBlur} onKeyPress={event => {
                     if (event.key === 'Enter') {
                         handleScan()
                     }
