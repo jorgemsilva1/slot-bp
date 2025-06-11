@@ -349,11 +349,9 @@ export const Slot = ({
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            //const arr = shuffle(Array(5)
-            //    .fill(0)
-            //    .fill(100, 0, count))
-
-            const arr = [100,0,0,0,0]
+            const arr = shuffle(Array(5)
+                .fill(0)
+                .fill(100, 0, count))
 
             setProbss(arr)
             setInputs((prev) => ({...prev, wins,winsSecond, winRand, winSecondRand}));
@@ -368,12 +366,32 @@ export const Slot = ({
     }, [awardss, inputs]);
 
     function shuffle(arr: any[]) {
-        for (let i = arr.length - 1; i > 0; i--) {
-            // j is a random integer from 0 to i
-            const j = Math.floor(Math.random() * (i + 1));
-            // swap arr[i] and arr[j]
-            [arr[i], arr[j]] = [arr[j], arr[i]];
+        const n = arr.length;
+        const hundredIdx = arr.map((v,i) => v===100 ? i : -1).filter(i => i>=0);
+        const zeroIdx    = arr.map((v,i) => v===0   ? i : -1).filter(i => i>=0);
+
+        // probability to pick a 100‐slot on the first swap:
+        const k = hundredIdx.length; // 0,1, or 2
+        const pPick100 = (0.5 * k) / (n - 0.5);
+
+        let j;
+        if (hundredIdx.length > 0 && Math.random() < pPick100) {
+            // pick among the 100s
+            j = hundredIdx[Math.floor(Math.random() * hundredIdx.length)];
+        } else {
+            // pick among the zeros
+            j = zeroIdx   [Math.floor(Math.random() * zeroIdx.length)];
         }
+
+        // first swap fixes the "last" slot bias
+        [arr[n - 1], arr[j]] = [arr[j], arr[n - 1]];
+
+        // now finish a standard Fisher–Yates on positions 0..n-2
+        for (let i = n - 2; i > 0; i--) {
+            const k = Math.floor(Math.random() * (i + 1));
+            [arr[i], arr[k]] = [arr[k], arr[i]];
+        }
+
         return arr;
     }
 
