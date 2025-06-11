@@ -57,7 +57,7 @@ export const Slot = ({
     const myArr = useRef([]);
     const disabled = useRef(true);
     const gameOver = useRef(false);
-    const [probss, setProbss] = useState([])
+    const probss = useRef([])
     const [awardss, setAwardss] = useState([])
     const [clickedPlay, setClickedPlay] = useState(false);
     const [numberOfPlays, setNumberOfPlays] = useState(null);
@@ -157,7 +157,7 @@ export const Slot = ({
         disabled.current = true;
         // 1. If it is second play, add a 15% chance on every round
         // 2. If non-user, and has won already one prize, can only win on the 4/5th play
-        const probability = probss[myArr.current.length];
+        const probability = probss.current[myArr.current.length];
 
         rollSoundRef.current.playSound();
 
@@ -214,7 +214,7 @@ export const Slot = ({
         onWin,
         endGame,
         onLose,
-        probss,
+        probss.current,
     ]);
 
     const handleClickUserType = useCallback(
@@ -269,7 +269,7 @@ export const Slot = ({
         gameOver.current = false;
         setInputs({})
         setScan('')
-        setProbss([])
+        probss.current = []
         setClickedPlay(false);
         setNumberOfPlays(null);
         setWaitingForScan(false)
@@ -353,7 +353,7 @@ export const Slot = ({
                 .fill(0)
                 .fill(100, 0, count))
 
-            setProbss(arr)
+            probss.current = arr
             setInputs((prev) => ({...prev, wins,winsSecond, winRand, winSecondRand}));
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
@@ -434,7 +434,7 @@ export const Slot = ({
         }, [inputs]);
 
     useEffect(() => {
-        if(awardss.length > 0 && probss.length === 0)
+        if(awardss.length > 0 && probss.current.length === 0)
             getProbs()
     }, [awardss]);
 
