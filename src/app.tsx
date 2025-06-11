@@ -37,7 +37,7 @@ export function App() {
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 7,
+        icon_num: 8,
         time_per_icon: 65,
         indexes: [0, 0, 0],
         theme: 'soccer',
