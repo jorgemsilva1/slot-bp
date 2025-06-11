@@ -349,9 +349,11 @@ export const Slot = ({
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            const arr = shuffle(Array(5)
-                .fill(0)
-                .fill(100, 0, count))
+            //const arr = shuffle(Array(5)
+            //    .fill(0)
+            //    .fill(100, 0, count))
+
+            const arr = [100,0,0,0,0]
 
             setProbss(arr)
             setInputs((prev) => ({...prev, wins,winsSecond, winRand, winSecondRand}));
@@ -454,6 +456,8 @@ export const Slot = ({
             }}></div>}
             <Container id={gameOver.current ? 'gameover-container' : ''}>
                 <BgController backgroundId={bg as any} />
+                {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5, coin6, coin7]} coinCount={70}
+                                            duration={2}></FallingCoins>}
                 {!gameOver.current ? (
                     <>
                         <SlotMachine _variables={config}>
@@ -471,8 +475,7 @@ export const Slot = ({
                             ))}
 
 
-                            {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5, coin6, coin7]} coinCount={70}
-                                              duration={2}></FallingCoins>}
+
                             <WonPrize className={showPrize ? '' : 'hide'} style={{position: 'absolute', zIndex: 9999}}>
                                 <BlinkingBorderLights style={{position: 'absolute'}}></BlinkingBorderLights>
                                 <div style={{position: 'absolute', zIndex: 9999}}>
