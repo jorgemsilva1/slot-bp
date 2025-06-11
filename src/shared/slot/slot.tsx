@@ -530,7 +530,7 @@ export const Slot = ({
                 hasSound={hasSound}
             />
             {waitingForScan && <div style={{top:'37%', width: '100%', textAlign: 'center', left:'50%', transform: 'translate(-50%, -50%)', fontWeight: 800, fontFamily: "Futura", fontSize: '9rem',zIndex: 9999, color: '#fff', padding: '5rem', position: 'absolute', textTransform: 'uppercase' }}>
-                Waiting for scan...
+                A aguardar leitura...
                 <input id={'qrcode'} value={scan} onChange={(e) => {
                     setScan(e.target?.value)
                 }} type="text" autocomplete="off" style={{opacity: '0%', left: 0 , position:'absolute', fontSize: '10rem'}} onBlur={handleBlur} onKeyPress={event => {
