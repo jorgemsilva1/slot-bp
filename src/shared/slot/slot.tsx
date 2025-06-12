@@ -57,8 +57,11 @@ export const Slot = ({
     const myArr = useRef([]);
     const disabled = useRef(true);
     const gameOver = useRef(false);
-    const probss = useRef([])
-    const [awardss, setAwardss] = useState([])
+    const probss = useRef([]);
+    // const [awardss, setAwardss] = useState([]);
+
+    const awardss = useRef([]);
+
     const [clickedPlay, setClickedPlay] = useState(false);
     const [numberOfPlays, setNumberOfPlays] = useState(null);
     const [waitingForScan, setWaitingForScan] = useState(false);
@@ -129,8 +132,8 @@ export const Slot = ({
                 Math.round(Math.random() * config.icon_num);
             if (typeof chosen === 'number')
                 delta =
-                    (offset + (config.icon_num) * config.additional_rotations) *
-                        (config.icon_num) +
+                    (offset + config.icon_num * config.additional_rotations) *
+                        config.icon_num +
                     chosen;
 
             const style = window.getComputedStyle(reel),
@@ -161,9 +164,14 @@ export const Slot = ({
 
         rollSoundRef.current.playSound();
 
-        const item = await probabilityCalc(awardss, prizes.current, inputs.isBac);
+        debugger;
+        const item = await probabilityCalc(
+            awardss.current,
+            prizes.current,
+            inputs.isBac
+        );
 
-        const winningSymbolIndex = probability ? item.index : null;
+        const winningSymbolIndex = probability ? item?.index : null;
 
         const deltas = await Promise.all(
             reelsRef.current
@@ -183,6 +191,7 @@ export const Slot = ({
             setShowPrize(true);
 
             onWin(item, inputs.isBac);
+            getAwards();
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
@@ -207,14 +216,13 @@ export const Slot = ({
         );
         setRolling(false);
     }, [
-        contextConfig.value.user_type,
-        contextConfig.value.win_percentage,
-        awardss,
+        inputs.isBac,
         roll,
         onWin,
+        dispatch,
+        contextConfig.value.user_type,
         endGame,
         onLose,
-        probss.current,
     ]);
 
     const handleClickUserType = useCallback(
@@ -223,21 +231,20 @@ export const Slot = ({
             clickSoundRef.current.playSound();
             ambienceSoundRef.current.setVolume(0.02);
             setNumberOfPlays(5);
-            if(bool) {
+            if (bool) {
                 await setWaitingForScan(true);
-            }
-            else {
-                setInputs({isBac:false, isDeposit: false, isWon: false})
-                await fetchInitialData(false)
+            } else {
                 disabled.current = false;
+                await fetchInitialData(false);
+                setInputs({ isBac: false, isDeposit: false, isWon: false });
             }
         },
         [fetchInitialData]
     );
 
     useEffect(() => {
-        document.getElementById('qrcode')?.focus()
-    }, [waitingForScan])
+        document.getElementById('qrcode')?.focus();
+    }, [waitingForScan]);
 
     const handlePlay = useCallback(() => {
         setClickedPlay(true);
@@ -247,16 +254,19 @@ export const Slot = ({
 
     const handleRestart = useCallback(async () => {
         // Add the play
-        await axios.post(`${CONFIG.apiUrl}/api/csv/append`,
-            {
+        await axios.post(`${CONFIG.apiUrl}/api/csv/append`, {
             data: {
-                myArr: [...myArr.current, ...Array(5 - myArr.current.length).fill(null)].slice(0, 5),
+                myArr: [
+                    ...myArr.current,
+                    ...Array(5 - myArr.current.length).fill(null),
+                ].slice(0, 5),
                 isBacana: contextConfig.value.user_type === 'bacana',
                 isDeposit: inputs.isDeposit,
                 hasWon: inputs.isWon,
             },
         });
 
+        setInputs({ isBac: false, isDeposit: false, isWon: false });
         setBg('one');
         setShowPrize(false);
         clickSoundRef.current.playSound();
@@ -267,52 +277,67 @@ export const Slot = ({
         prizes.current = [];
         reelsRef.current = [];
         gameOver.current = false;
-        setInputs({})
-        setScan('')
-        probss.current = []
+        setInputs({});
+        setScan('');
+        probss.current = [];
         setClickedPlay(false);
         setNumberOfPlays(null);
-        setWaitingForScan(false)
+        setWaitingForScan(false);
     }, [fetchInitialData]);
 
-    const isJson = (str: string)  => {
+    const isJson = (str: string) => {
         try {
             JSON.parse(str);
         } catch (e) {
             return false;
         }
         return true;
-    }
+    };
 
     const handleRollClick = useCallback(async () => {
-        if (awardss?.length && !disabled.current && !gameOver.current) {
+        if (awardss.current?.length && !disabled.current && !gameOver.current) {
             handleReset();
             await handleRoll();
         }
-    }, [awardss?.length, handleReset, handleRoll]);
+    }, [handleReset, handleRoll]);
 
-    const handleScan = useCallback(async (force = null) => {
-        let qrcode = scan.replaceAll('Ç', ':').replaceAll('ª','"').replace('`', '}').replace('*', '{') + '}';
-        if(isJson(qrcode)) {
-            qrcode = JSON.parse(qrcode);
-            setInputs({isBac: true, isDeposit: qrcode.deposit, isWon: qrcode.won});
-            await fetchInitialData(true, qrcode.deposit, qrcode.won);
-            disabled.current = false;
-            setWaitingForScan(false);
-            //handleRollClick()
-        }
-    }, [scan])
-
+    const handleScan = useCallback(
+        async (force = null) => {
+            let qrcode = scan
+                .replaceAll('Ç', ':')
+                .replaceAll('ª', '"')
+                .replace('`', '}')
+                .replace('*', '{');
+            if (qrcode[qrcode.length - 1] != '}') qrcode = qrcode + '}';
+            if (isJson(qrcode)) {
+                qrcode = JSON.parse(qrcode);
+                setInputs({
+                    isBac: true,
+                    isDeposit: qrcode.deposit,
+                    isWon: qrcode.won,
+                });
+                await fetchInitialData(true, qrcode.deposit, qrcode.won);
+                disabled.current = false;
+                setWaitingForScan(false);
+                //handleRollClick()
+            }
+        },
+        [scan]
+    );
 
     useEffect(() => {
         window.document.addEventListener('keydown', async (event) => {
-            if (event.key === '5' && awardss?.length && !disabled.current) {
+            if (
+                event.key === '5' &&
+                awardss.current.length &&
+                !disabled.current
+            ) {
                 handleReset();
                 disabled.current = true;
                 await handleRoll();
             }
         });
-    }, [awardss?.length, gameOver.current, handleReset, handleRoll]);
+    }, [gameOver.current, handleReset, handleRoll]);
 
     const handleBlur = () => {
         // delay focus call until after blur truly finishes
@@ -323,52 +348,69 @@ export const Slot = ({
 
     const getProbs = useCallback(async () => {
         try {
+            console.log('vain bsucsar probs');
             // Get slot probs
-            const response = await axios.get(
-                `${CONFIG.apiUrl}/api/configs`
-            );
+            const response = await axios.get(`${CONFIG.apiUrl}/api/configs`);
 
             const activeSlot = response.data.data.find(
                 (el: any) => el.attributes.active
             );
 
-            contextConfig.value.bacana_user_second_chance =activeSlot.attributes.bacana_user_second_chance
-            contextConfig.value.deposit_bacana_user_second_chance =activeSlot.attributes.deposit_bacana_user_second_chance
-            contextConfig.value.non_bacana_user_second_chance =activeSlot.attributes.non_bacana_user_second_chance
+            contextConfig.value.bacana_user_second_chance =
+                activeSlot.attributes.bacana_user_second_chance;
+            contextConfig.value.deposit_bacana_user_second_chance =
+                activeSlot.attributes.deposit_bacana_user_second_chance;
+            contextConfig.value.non_bacana_user_second_chance =
+                activeSlot.attributes.non_bacana_user_second_chance;
 
             const finalProb = inputs.isBac
-                ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_chance : activeSlot.attributes.bacana_user_chance) :
-                activeSlot.attributes.non_bacana_user_chance
-            const finalProbSecond = (inputs.isBac ? (inputs.isDeposit ? activeSlot.attributes.deposit_bacana_user_second_chance : activeSlot.attributes.bacana_user_second_chance)
-                : activeSlot.attributes.non_bacana_user_second_chance)
+                ? inputs.isDeposit
+                    ? activeSlot.attributes.deposit_bacana_user_chance
+                    : activeSlot.attributes.bacana_user_chance
+                : activeSlot.attributes.non_bacana_user_chance;
+            const finalProbSecond = inputs.isBac
+                ? inputs.isDeposit
+                    ? activeSlot.attributes.deposit_bacana_user_second_chance
+                    : activeSlot.attributes.bacana_user_second_chance
+                : activeSlot.attributes.non_bacana_user_second_chance;
 
-            const winRand = Math.random()
-            const winSecondRand = Math.random()
-            const wins = winRand < (finalProb / 100);
-            const winsSecond = winSecondRand < (finalProbSecond / 100);
+            const winRand = Math.random();
+            const winSecondRand = Math.random();
+            const wins = winRand < finalProb / 100;
+            const winsSecond = winSecondRand < finalProbSecond / 100;
 
             const count = wins ? 1 + Number(winsSecond) : 0;
 
-            const arr = shuffle(Array(5)
-                .fill(0)
-                .fill(100, 0, count))
+            const arr = shuffle(Array(5).fill(0).fill(100, 0, count));
 
-            probss.current = arr
-            setInputs((prev) => ({...prev, wins,winsSecond, winRand, winSecondRand}));
+            console.log('ORDEM PREMIOS', arr);
+
+            probss.current = arr;
+            setInputs((prev) => ({
+                ...prev,
+                wins,
+                winsSecond,
+                winRand,
+                winSecondRand,
+            }));
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
-                deposit: activeSlot.attributes.deposit_bacana_user_chance
+                deposit: activeSlot.attributes.deposit_bacana_user_chance,
             };
         } catch (err) {
             alert('Ocorreu um erro com as probs.');
         }
-    }, [awardss, inputs]);
+    }, [inputs]);
 
     function shuffle(arr: any[]) {
         const n = arr.length;
-        const hundredIdx = arr.map((v,i) => v===100 ? i : -1).filter(i => i>=0);
-        const zeroIdx    = arr.map((v,i) => v===0   ? i : -1).filter(i => i>=0);
+        const hundredIdx = arr
+            .map((v, i) => (v === 100 ? i : -1))
+            .filter((i) => i >= 0);
+        const zeroIdx = arr
+            .map((v, i) => (v === 0 ? i : -1))
+            .filter((i) => i >= 0);
 
         // probability to pick a 100‐slot on the first swap:
         const k = hundredIdx.length; // 0,1, or 2
@@ -380,7 +422,7 @@ export const Slot = ({
             j = hundredIdx[Math.floor(Math.random() * hundredIdx.length)];
         } else {
             // pick among the zeros
-            j = zeroIdx   [Math.floor(Math.random() * zeroIdx.length)];
+            j = zeroIdx[Math.floor(Math.random() * zeroIdx.length)];
         }
 
         // first swap fixes the "last" slot bias
@@ -396,25 +438,37 @@ export const Slot = ({
     }
 
     const getAwards = useCallback(() => {
-        let finalAwards = null
-        const isAllZero = (arr) => Array.isArray(arr) && arr.every(item => item.qty === 0);
+        console.log('ENTREI NO GET AWARDS');
+        console.log(inputs);
+        let finalAwards = null;
+        const isAllZero = (arr) =>
+            Array.isArray(arr) && arr.every((item) => item.qty === 0);
 
         if (inputs.isBac) {
             const force = awards.current.forceRewardsBacana;
             const forceDeposit = awards.current.forceRewardsBacanaDeposit;
             const bacana = awards.current.rewardsBacana;
             const bacanaDeposit = awards.current.rewardsBacanaDeposit;
-            if(inputs.isDeposit){
-                if (!inputs.isWon && !prizes.current.length && forceDeposit && !isAllZero(forceDeposit)) {
+            if (inputs.isDeposit) {
+                if (
+                    !inputs.isWon &&
+                    !prizes.current.length &&
+                    forceDeposit &&
+                    !isAllZero(forceDeposit)
+                ) {
                     finalAwards = forceDeposit;
                 } else if (bacanaDeposit && !isAllZero(bacanaDeposit)) {
                     finalAwards = bacanaDeposit;
                 } else {
                     finalAwards = [];
                 }
-            }
-            else{
-                if (!inputs.isWon && !prizes.current.length && force && !isAllZero(force)) {
+            } else {
+                if (
+                    !inputs.isWon &&
+                    !prizes.current.length &&
+                    force &&
+                    !isAllZero(force)
+                ) {
                     finalAwards = force;
                 } else if (bacana && !isAllZero(bacana)) {
                     finalAwards = bacana;
@@ -423,31 +477,28 @@ export const Slot = ({
                 }
             }
         } else {
-
             const normal = awards.current?.rewards;
 
-            finalAwards = (normal && !isAllZero(normal)) ? normal : [];
+            console.log('NORMAL', normal);
+            finalAwards = normal && !isAllZero(normal) ? normal : [];
         }
-        if(finalAwards.length === 0)
-            setEmpty(true)
-        setAwardss(finalAwards)
-        }, [inputs]);
+        if (finalAwards.length === 0) setEmpty(true);
+        console.log(finalAwards);
+        awardss.current = finalAwards;
+    }, [awards, inputs]);
 
     useEffect(() => {
-        if(awardss.length > 0 && probss.current.length === 0)
-            getProbs()
-    }, [awardss]);
+        if (awardss.current.length > 0 && probss.current.length === 0)
+            getProbs();
+    }, [getProbs, awardss.current]);
 
     useEffect(() => {
-        if("isBac" in inputs) {
+        if (
+            (prizes.current.length > 0 && inputs.isBac && !inputs.isWon) ||
+            'isBac' in inputs
+        )
             getAwards();
-        }
-    }, [inputs.isBac]);
-
-    useEffect(() => {
-        if(prizes.current.length > 0 && inputs.isBac && !inputs.isWon)
-            getAwards();
-    }, [prizes.current]);
+    }, [getAwards, inputs]);
 
     useEffect(() => {
         if (numberOfPlays === 0) {
@@ -457,25 +508,41 @@ export const Slot = ({
 
     return (
         <FullScreen handle={fsHandle}>
-
-
-            {(((disabled.current && !rolling) || showPrize) && !gameOver.current)  && <div style={{
-                zIndex: '1',
-                opacity: '90%',
-                top: '18vh',
-                marginTop: '5px',
-                backgroundColor: '#232323',
-                width: '90%',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                height: '37dvh',
-                paddingBottom: '8px',
-                position: 'absolute',
-            }}></div>}
+            {((disabled.current && !rolling) || showPrize) &&
+                !gameOver.current && (
+                    <div
+                        style={{
+                            zIndex: '1',
+                            opacity: '90%',
+                            top: '18vh',
+                            marginTop: '5px',
+                            backgroundColor: '#232323',
+                            width: '90%',
+                            left: '50%',
+                            transform: 'translateX(-50%)',
+                            height: '37dvh',
+                            paddingBottom: '8px',
+                            position: 'absolute',
+                        }}
+                    ></div>
+                )}
             <Container id={gameOver.current ? 'gameover-container' : ''}>
                 <BgController backgroundId={bg as any} />
-                {showPrize && <FallingCoins coinSrcs={[coin1, coin2, coin3, coin4, coin5, coin6, coin7]} coinCount={70}
-                                            duration={2}></FallingCoins>}
+                {showPrize && (
+                    <FallingCoins
+                        coinSrcs={[
+                            coin1,
+                            coin2,
+                            coin3,
+                            coin4,
+                            coin5,
+                            coin6,
+                            coin7,
+                        ]}
+                        coinCount={70}
+                        duration={2}
+                    ></FallingCoins>
+                )}
                 {!gameOver.current ? (
                     <>
                         <SlotMachine _variables={config}>
@@ -492,17 +559,40 @@ export const Slot = ({
                                 ></span>
                             ))}
 
-
-
-                            <WonPrize className={showPrize ? '' : 'hide'} style={{position: 'absolute', zIndex: 9999}}>
-                                <BlinkingBorderLights style={{position: 'absolute'}}></BlinkingBorderLights>
-                                <div style={{position: 'absolute', zIndex: 9999}}>
-                                    <p className="title" style={{ fontSize: '4rem', color: 'white', marginTop: '0rem' }}>Ganhaste</p>
-                                    <p style={{ fontSize: '6rem', color: '#232323', marginTop: '-4rem' }}>
+                            <WonPrize
+                                className={showPrize ? '' : 'hide'}
+                                style={{ position: 'absolute', zIndex: 9999 }}
+                            >
+                                <BlinkingBorderLights
+                                    style={{ position: 'absolute' }}
+                                ></BlinkingBorderLights>
+                                <div
+                                    style={{
+                                        position: 'absolute',
+                                        zIndex: 9999,
+                                    }}
+                                >
+                                    <p
+                                        className="title"
+                                        style={{
+                                            fontSize: '4rem',
+                                            color: 'white',
+                                            marginTop: '0rem',
+                                        }}
+                                    >
+                                        Ganhaste
+                                    </p>
+                                    <p
+                                        style={{
+                                            fontSize: '6rem',
+                                            color: '#232323',
+                                            marginTop: '-4rem',
+                                        }}
+                                    >
                                         {
                                             myArr.current[
-                                            myArr.current.length - 1
-                                                ]
+                                                myArr.current.length - 1
+                                            ]
                                         }
                                     </p>
                                 </div>
@@ -529,18 +619,48 @@ export const Slot = ({
                 handleActivateSound={activateAmbienceSound}
                 hasSound={hasSound}
             />
-            {waitingForScan && <div style={{top:'37%', width: '100%', textAlign: 'center', left:'50%', transform: 'translate(-50%, -50%)', fontWeight: 800, fontFamily: "Futura", fontSize: '9rem',zIndex: 9999, color: '#fff', padding: '5rem', position: 'absolute', textTransform: 'uppercase' }}>
-                A aguardar leitura...
-                <input id={'qrcode'} value={scan} onChange={(e) => {
-                    setScan(e.target?.value)
-                }} type="text" autocomplete="off" style={{opacity: '0%', left: 0 , position:'absolute', fontSize: '10rem'}} onBlur={handleBlur} onKeyPress={event => {
-                    if (event.key === 'Enter') {
-                        handleScan()
-                    }
-                }}/>
-            </div>}
-
-
+            {waitingForScan && (
+                <div
+                    style={{
+                        top: '37%',
+                        width: '100%',
+                        textAlign: 'center',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        fontWeight: 800,
+                        fontFamily: 'Futura',
+                        fontSize: '9rem',
+                        zIndex: 9999,
+                        color: '#fff',
+                        padding: '5rem',
+                        position: 'absolute',
+                        textTransform: 'uppercase',
+                    }}
+                >
+                    A aguardar leitura...
+                    <input
+                        id={'qrcode'}
+                        value={scan}
+                        onChange={(e) => {
+                            setScan(e.target?.value);
+                        }}
+                        type="text"
+                        autocomplete="off"
+                        style={{
+                            opacity: '0%',
+                            left: 0,
+                            position: 'absolute',
+                            fontSize: '10rem',
+                        }}
+                        onBlur={handleBlur}
+                        onKeyPress={(event) => {
+                            if (event.key === 'Enter') {
+                                handleScan();
+                            }
+                        }}
+                    />
+                </div>
+            )}
 
             <SoundStudio
                 refs={{
@@ -608,7 +728,7 @@ const SlotMachine = styled.section<{ _variables: SlotConfigType }>`
         background-image: ${({ _variables }) => `url(${_variables.reelImg})`};
         background-repeat: repeat-y;
         background-position-y: 0;
-        
+
         /** TEMP **/
         background-size: cover;
     }

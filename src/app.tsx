@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'preact/hooks';
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'preact/hooks';
 import { Slot } from './shared';
 import { VariablesType } from './shared/slot/slot';
 import axios from 'axios';
@@ -33,12 +39,12 @@ export function App() {
     const awardsRef = useRef();
     const [hasWon, setHasWon] = useState(false);
     const { config, dispatch } = useConfigContext();
-    const [inputs, setInputs] = useState({})
+    const inputs = useRef({});
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
         icon_num: 8,
-        time_per_icon: 65,
+        time_per_icon: 3,
         indexes: [0, 0, 0],
         theme: 'soccer',
         reelImg: '/img/reel.png',
@@ -67,14 +73,27 @@ export function App() {
                 stock: award.attributes.stock,
                 index: award.attributes.index,
                 rarity_level: award.attributes.rarity_level,
-                multiplier: award.attributes.multiplier === 'Double' ? 0.5 : award.attributes.multiplier === 'Triple' ? 0.33 : 1,
+                multiplier:
+                    award.attributes.multiplier === 'Double'
+                        ? 0.5
+                        : award.attributes.multiplier === 'Triple'
+                        ? 0.33
+                        : 1,
             }));
 
         const rewards = mapAwards(activeSlot.attributes.awards.data);
-        const rewardsBacana = mapAwards(activeSlot.attributes.awards_bacana.data);
-        const rewardsBacanaDeposit = mapAwards(activeSlot.attributes.awards_bacana_deposit.data);
-        const forceRewardsBacana = mapAwards(activeSlot.attributes.force_bacana_award.data);
-        const forceRewardsBacanaDeposit = mapAwards(activeSlot.attributes.force_deposit_bacana_award.data);
+        const rewardsBacana = mapAwards(
+            activeSlot.attributes.awards_bacana.data
+        );
+        const rewardsBacanaDeposit = mapAwards(
+            activeSlot.attributes.awards_bacana_deposit.data
+        );
+        const forceRewardsBacana = mapAwards(
+            activeSlot.attributes.force_bacana_award.data
+        );
+        const forceRewardsBacanaDeposit = mapAwards(
+            activeSlot.attributes.force_deposit_bacana_award.data
+        );
 
         activeSlot = {
             id: activeSlot.id,
@@ -94,13 +113,19 @@ export function App() {
     }, []);
 
     const fetchInitialData = useCallback(
-        async (isBacana?: boolean, isDeposit?: boolean, alreadyWon?: boolean) => {
-            setHasWon(false)
+        async (
+            isBacana?: boolean,
+            isDeposit?: boolean,
+            alreadyWon?: boolean
+        ) => {
+            setHasWon(false);
             if (config.user_type) {
                 dispatch(resetState());
             }
-            setInputs({
-                isDeposit, alreadyWon})
+            inputs.current = {
+                isDeposit,
+                alreadyWon,
+            };
 
             const res = await fetchData();
             const userType =
@@ -148,8 +173,7 @@ export function App() {
                             config_id: internalConfig.id,
                         },
                     });
-                setHasWon(true)
-
+                    setHasWon(true);
                 }
                 await fetchData();
             } catch (err) {
@@ -179,42 +203,6 @@ export function App() {
         },
         [fetchData]
     );
-
-    const award = useMemo(() => {
-        let awards = null
-        const isAllZero = (arr) => Array.isArray(arr) && arr.every(item => item.qty === 0);
-
-        if (config.user_type === 'bacana') {
-            const force = awardsRef.current?.forceRewardsBacana;
-            const forceDeposit = awardsRef.current?.forceRewardsBacanaDeposit;
-            const bacana = awardsRef.current?.rewardsBacana;
-            const bacanaDeposit = awardsRef.current?.rewardsBacanaDeposit;
-            if(inputs.isDeposit){
-                if (!inputs.alreadyWon && !hasWon && forceDeposit && !isAllZero(forceDeposit)) {
-                    awards = forceDeposit;
-                } else if (bacanaDeposit && !isAllZero(bacanaDeposit)) {
-                    awards = bacanaDeposit;
-                } else {
-                    awards = [];
-                }
-            }
-            else{
-                if (!inputs.alreadyWon && !hasWon && force && !isAllZero(force)) {
-                    awards = force;
-                } else if (bacana && !isAllZero(bacana)) {
-                    awards = bacana;
-                } else {
-                    awards = [];
-                }
-            }
-        } else {
-
-            const normal = awardsRef.current?.rewards;
-
-            awards = (normal && !isAllZero(normal)) ? normal : [];
-        }
-        return awards
-    }, [config.user_type, config.alreadyWon, hasWon, handleOnLose]);
 
     useEffect(() => {
         fetchInitialData();
