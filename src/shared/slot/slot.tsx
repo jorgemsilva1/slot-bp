@@ -169,6 +169,9 @@ export const Slot = ({
             prizes.current,
             inputs.isBac
         );
+        console.log(probss.current);
+        console.log(awardss.current);
+        console.log(item);
 
         const winningSymbolIndex = probability ? item?.index : null;
 
