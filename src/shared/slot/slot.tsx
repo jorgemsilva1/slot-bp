@@ -68,7 +68,6 @@ export const Slot = ({
     const [scan, setScan] = useState('');
     const reelsRef = useRef([]);
     const [bg, setBg] = useState('one');
-    const [inputs, setInputs] = useState({});
     const [rolling, setRolling] = useState(false);
     const [empty, setEmpty] = useState(false);
     const [showPrize, setShowPrize] = useState(false);
@@ -79,6 +78,7 @@ export const Slot = ({
     });
 
     const prizes = useRef([]);
+    const inputs = useRef({})
     const probArr = useRef([]);
 
     // SOUNDS REF
@@ -167,7 +167,7 @@ export const Slot = ({
         const item = await probabilityCalc(
             awardss.current,
             prizes.current,
-            inputs.isBac
+            inputs.current.isBac
         );
         console.log(probss.current);
         console.log(awardss.current);
@@ -192,7 +192,7 @@ export const Slot = ({
         if (deltas.every((value, _, arr) => arr[0] === value)) {
             setShowPrize(true);
 
-            onWin(item, inputs.isBac);
+            onWin(item, inputs.current.isBac);
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
@@ -209,7 +209,7 @@ export const Slot = ({
                 endGame();
             }
         } else {
-            onLose(inputs.isBac);
+            onLose(inputs.current.isBac);
             lostSoundRef.current.playSound();
         }
         disabled.current = false;
@@ -218,7 +218,7 @@ export const Slot = ({
         );
         setRolling(false);
     }, [
-        inputs.isBac,
+        inputs.current.isBac,
         roll,
         onWin,
         dispatch,
@@ -238,7 +238,9 @@ export const Slot = ({
             } else {
                 disabled.current = false;
                 await fetchInitialData(false);
-                setInputs({ isBac: false, isDeposit: false, isWon: false });
+                inputs.current = { isBac: false, isDeposit: false, isWon: false }
+                getAwards()
+                getProbs()
             }
         },
         [fetchInitialData]
@@ -263,12 +265,12 @@ export const Slot = ({
                     ...Array(5 - myArr.current.length).fill(null),
                 ].slice(0, 5),
                 isBacana: contextConfig.value.user_type === 'bacana',
-                isDeposit: inputs.isDeposit,
-                hasWon: inputs.isWon,
+                isDeposit: inputs.current.isDeposit,
+                hasWon: inputs.current.isWon,
             },
         });
 
-        setInputs({ isBac: false, isDeposit: false, isWon: false });
+        inputs.current = { isBac: false, isDeposit: false, isWon: false };
         setBg('one');
         setShowPrize(false);
         clickSoundRef.current.playSound();
@@ -279,7 +281,6 @@ export const Slot = ({
         prizes.current = [];
         reelsRef.current = [];
         gameOver.current = false;
-        setInputs({});
         setScan('');
         probss.current = [];
         setClickedPlay(false);
@@ -297,6 +298,7 @@ export const Slot = ({
     };
 
     const handleRollClick = useCallback(async () => {
+        console.log(awardss.current);
         if (awardss.current?.length && !disabled.current && !gameOver.current) {
             handleReset();
             await handleRoll();
@@ -313,14 +315,16 @@ export const Slot = ({
             if (qrcode[qrcode.length - 1] != '}') qrcode = qrcode + '}';
             if (isJson(qrcode)) {
                 qrcode = JSON.parse(qrcode);
-                setInputs({
+                inputs.current = {
                     isBac: true,
                     isDeposit: qrcode.deposit,
                     isWon: qrcode.won,
-                });
+                }
                 await fetchInitialData(true, qrcode.deposit, qrcode.won);
                 disabled.current = false;
                 setWaitingForScan(false);
+                getAwards()
+                getProbs()
                 //handleRollClick()
             }
         },
@@ -365,13 +369,13 @@ export const Slot = ({
             contextConfig.value.non_bacana_user_second_chance =
                 activeSlot.attributes.non_bacana_user_second_chance;
 
-            const finalProb = inputs.isBac
-                ? inputs.isDeposit
+            const finalProb = inputs.current.isBac
+                ? inputs.current.isDeposit
                     ? activeSlot.attributes.deposit_bacana_user_chance
                     : activeSlot.attributes.bacana_user_chance
                 : activeSlot.attributes.non_bacana_user_chance;
-            const finalProbSecond = inputs.isBac
-                ? inputs.isDeposit
+            const finalProbSecond = inputs.current.isBac
+                ? inputs.current.isDeposit
                     ? activeSlot.attributes.deposit_bacana_user_second_chance
                     : activeSlot.attributes.bacana_user_second_chance
                 : activeSlot.attributes.non_bacana_user_second_chance;
@@ -388,13 +392,13 @@ export const Slot = ({
             console.log('ORDEM PREMIOS', arr);
 
             probss.current = arr;
-            setInputs((prev) => ({
-                ...prev,
+            inputs.current = {
+                ...inputs.current,
                 wins,
                 winsSecond,
                 winRand,
                 winSecondRand,
-            }));
+            }
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
@@ -403,7 +407,7 @@ export const Slot = ({
         } catch (err) {
             alert('Ocorreu um erro com as probs.');
         }
-    }, [inputs]);
+    }, [inputs.current]);
 
     function shuffle(arr: any[]) {
         const n = arr.length;
@@ -446,14 +450,14 @@ export const Slot = ({
         const isAllZero = (arr) =>
             Array.isArray(arr) && arr.every((item) => item.qty === 0);
 
-        if (inputs.isBac) {
+        if (inputs.current.isBac) {
             const force = awards.current.forceRewardsBacana;
             const forceDeposit = awards.current.forceRewardsBacanaDeposit;
             const bacana = awards.current.rewardsBacana;
             const bacanaDeposit = awards.current.rewardsBacanaDeposit;
-            if (inputs.isDeposit) {
+            if (inputs.current.isDeposit) {
                 if (
-                    !inputs.isWon &&
+                    !inputs.current.isWon &&
                     !prizes.current.length &&
                     forceDeposit &&
                     !isAllZero(forceDeposit)
@@ -466,7 +470,7 @@ export const Slot = ({
                 }
             } else {
                 if (
-                    !inputs.isWon &&
+                    !inputs.current.isWon &&
                     !prizes.current.length &&
                     force &&
                     !isAllZero(force)
@@ -487,20 +491,15 @@ export const Slot = ({
         if (finalAwards.length === 0) setEmpty(true);
         console.log(finalAwards);
         awardss.current = finalAwards;
-    }, [awards, inputs]);
-
-    useEffect(() => {
-        if (awardss.current.length > 0 && probss.current.length === 0)
-            getProbs();
-    }, [getProbs, awardss.current]);
+    }, [awards, inputs.current]);
 
     useEffect(() => {
         if (
             (prizes.current.length > 0 && inputs.isBac && !inputs.isWon) ||
-            'isBac' in inputs
+            'isBac' in inputs.current
         )
             getAwards();
-    }, [getAwards, inputs]);
+    }, [getAwards, inputs.current]);
 
     useEffect(() => {
         if (numberOfPlays === 0) {
