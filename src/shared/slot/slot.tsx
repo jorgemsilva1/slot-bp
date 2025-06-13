@@ -189,7 +189,7 @@ export const Slot = ({
         ];
 
         // Check winning status and define rules
-        if (deltas.every((value, _, arr) => arr[0] === value)) {
+        if (probability === 100) {
             setShowPrize(true);
 
             onWin(item, inputs.current.isBac);
