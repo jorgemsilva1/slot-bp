@@ -494,14 +494,6 @@ export const Slot = ({
     }, [awards, inputs.current]);
 
     useEffect(() => {
-        if (
-            (prizes.current.length > 0 && inputs.isBac && !inputs.isWon) ||
-            'isBac' in inputs.current
-        )
-            getAwards();
-    }, [getAwards, inputs.current]);
-
-    useEffect(() => {
         if (numberOfPlays === 0) {
             endGame();
         }
