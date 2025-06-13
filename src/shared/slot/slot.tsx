@@ -164,7 +164,6 @@ export const Slot = ({
 
         rollSoundRef.current.playSound();
 
-        debugger;
         const item = await probabilityCalc(
             awardss.current,
             prizes.current,
@@ -191,10 +190,10 @@ export const Slot = ({
             setShowPrize(true);
 
             onWin(item, inputs.isBac);
-            getAwards();
             winSoundRef.current.playSound();
 
             prizes.current = [...prizes.current, item.index];
+            getAwards();
             if (prizes.current.length === 1) {
                 // If first prize, add to the array and change probability to a quarter
                 dispatch(
