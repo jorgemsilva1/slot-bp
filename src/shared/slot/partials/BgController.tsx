@@ -3,17 +3,19 @@ import styled from 'styled-components';
 
 export const BgController = ({
     backgroundId,
+    wonLasVegas = false,
 }: {
     backgroundId: 'one' | 'two' | 'go';
+    wonLasVegas?: boolean;
 }) => {
     const Element = useMemo(() => {
         switch (backgroundId) {
             case 'go':
-                return <Background bg="go" />;
+                return <Background wonLasVegas={wonLasVegas} bg="go" />;
             case 'two':
-                return <Background bg="two" />;
+                return <Background wonLasVegas={wonLasVegas} bg="two" />;
             default:
-                return <Background bg="one" />;
+                return <Background wonLasVegas={wonLasVegas} bg="one" />;
         }
     }, [backgroundId]);
 
@@ -26,5 +28,8 @@ const Background = styled.div`
     left: 0;
     width: 100%;
     height: 100%;
-    background: ${({ bg }) => `url('/img/bg_${bg}.svg')`};
+    background: ${({ bg, wonLasVegas }) =>
+        wonLasVegas
+            ? "url('/img/bg_lasvegas.png')"
+            : `url('/img/bg_${bg}.png')`};
 `;

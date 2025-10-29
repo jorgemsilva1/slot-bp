@@ -77,8 +77,10 @@ export const Slot = ({
         bacana: 0,
     });
 
+    const [wonLasVegas, setWonLasVegas] = useState(false);
+
     const prizes = useRef([]);
-    const inputs = useRef({})
+    const inputs = useRef({});
     const probArr = useRef([]);
 
     // SOUNDS REF
@@ -197,6 +199,13 @@ export const Slot = ({
 
             prizes.current = [...prizes.current, item.index];
             getAwards();
+
+            // GANHOU LAS VEGAS
+            if (item?.index === 4) {
+                setWonLasVegas(true);
+                return endGame();
+            }
+
             if (prizes.current.length === 1) {
                 // If first prize, add to the array and change probability to a quarter
                 dispatch(
@@ -238,9 +247,13 @@ export const Slot = ({
             } else {
                 disabled.current = false;
                 await fetchInitialData(false);
-                inputs.current = { isBac: false, isDeposit: false, isWon: false }
-                getAwards()
-                getProbs()
+                inputs.current = {
+                    isBac: false,
+                    isDeposit: false,
+                    isWon: false,
+                };
+                getAwards();
+                getProbs();
             }
         },
         [fetchInitialData]
@@ -257,6 +270,7 @@ export const Slot = ({
     }, []);
 
     const handleRestart = useCallback(async () => {
+        setWonLasVegas(false);
         // Add the play
         await axios.post(`${CONFIG.apiUrl}/api/csv/append`, {
             data: {
@@ -311,7 +325,15 @@ export const Slot = ({
                 .replaceAll('Ç', ':')
                 .replaceAll('ª', '"')
                 .replace('`', '}')
+                .replace('`', '}')
                 .replace('*', '{');
+
+            // let qrcode = scan
+            //     .replace(/ª/g, '{')
+            //     .replace(/Ç/g, ':')
+            //     .replace(/\^/g, '"')
+            //     .replace(/`/g, '}');
+
             if (qrcode[qrcode.length - 1] != '}') qrcode = qrcode + '}';
             if (isJson(qrcode)) {
                 qrcode = JSON.parse(qrcode);
@@ -319,12 +341,12 @@ export const Slot = ({
                     isBac: true,
                     isDeposit: qrcode.deposit,
                     isWon: qrcode.won,
-                }
+                };
                 await fetchInitialData(true, qrcode.deposit, qrcode.won);
                 disabled.current = false;
                 setWaitingForScan(false);
-                getAwards()
-                getProbs()
+                getAwards();
+                getProbs();
                 //handleRollClick()
             }
         },
@@ -398,7 +420,7 @@ export const Slot = ({
                 winsSecond,
                 winRand,
                 winSecondRand,
-            }
+            };
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
@@ -520,7 +542,10 @@ export const Slot = ({
                     ></div>
                 )}
             <Container id={gameOver.current ? 'gameover-container' : ''}>
-                <BgController backgroundId={bg as any} />
+                <BgController
+                    backgroundId={bg as any}
+                    wonLasVegas={wonLasVegas}
+                />
                 {showPrize && (
                     <FallingCoins
                         coinSrcs={[
@@ -536,7 +561,7 @@ export const Slot = ({
                         duration={2}
                     ></FallingCoins>
                 )}
-                {!gameOver.current ? (
+                {!gameOver.current && !wonLasVegas ? (
                     <>
                         <SlotMachine _variables={config}>
                             {Array.from(
@@ -603,7 +628,7 @@ export const Slot = ({
                         />
                     </>
                 ) : (
-                    <PrizeList arr={myArr.current} />
+                    <PrizeList arr={myArr.current} wonLasVegas={wonLasVegas} />
                 )}
             </Container>
             <Controls
