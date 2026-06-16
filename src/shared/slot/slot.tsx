@@ -8,6 +8,7 @@ import coin4 from '../../assets/coins/coin4.svg';
 import coin5 from '../../assets/coins/coin5.svg';
 import coin6 from '../../assets/coins/coin1.png';
 import coin7 from '../../assets/coins/coin2.png';
+import ganhaste from '../../../public/img/ganhaste.svg';
 import { SlotConfigType, SlotReward } from '../../app';
 import {
     arrayOfProbabilities,
@@ -27,6 +28,7 @@ import axios from 'axios';
 import { CONFIG } from '../../config/index.';
 import BlinkingBorderLights from '../../components/BlinkingBorderLights.tsx';
 import FallingCoins from '../../components/FallingCoins.tsx';
+import { Divider } from '../../components/config/partials/divider/divider.tsx';
 
 type SlotProps = {
     onWin: (wonindex: number, isBacana: boolean) => any;
@@ -78,7 +80,7 @@ export const Slot = ({
     });
 
     const prizes = useRef([]);
-    const inputs = useRef({})
+    const inputs = useRef({});
     const probArr = useRef([]);
 
     // SOUNDS REF
@@ -181,8 +183,10 @@ export const Slot = ({
         if (winningSymbolIndex != null) {
             perReelChosen = reelElements.map(() => winningSymbolIndex);
         } else {
-            perReelChosen = reelElements.map(() =>
-                Math.round(Math.random() * config.icon_num) % config.icon_num
+            perReelChosen = reelElements.map(
+                () =>
+                    Math.round(Math.random() * config.icon_num) %
+                    config.icon_num
             );
             if (perReelChosen.every((i) => i === perReelChosen[0])) {
                 perReelChosen[perReelChosen.length - 1] =
@@ -191,7 +195,9 @@ export const Slot = ({
         }
 
         const deltas = await Promise.all(
-            reelElements.map((reel, index) => roll(reel, index, perReelChosen[index]))
+            reelElements.map((reel, index) =>
+                roll(reel, index, perReelChosen[index])
+            )
         );
 
         myArr.current = [
@@ -249,9 +255,13 @@ export const Slot = ({
             } else {
                 disabled.current = false;
                 await fetchInitialData(false);
-                inputs.current = { isBac: false, isDeposit: false, isWon: false }
-                getAwards()
-                getProbs()
+                inputs.current = {
+                    isBac: false,
+                    isDeposit: false,
+                    isWon: false,
+                };
+                getAwards();
+                getProbs();
             }
         },
         [fetchInitialData]
@@ -330,12 +340,12 @@ export const Slot = ({
                     isBac: true,
                     isDeposit: qrcode.deposit,
                     isWon: qrcode.won,
-                }
+                };
                 await fetchInitialData(true, qrcode.deposit, qrcode.won);
                 disabled.current = false;
                 setWaitingForScan(false);
-                getAwards()
-                getProbs()
+                getAwards();
+                getProbs();
                 //handleRollClick()
             }
         },
@@ -409,7 +419,7 @@ export const Slot = ({
                 winsSecond,
                 winRand,
                 winSecondRand,
-            }
+            };
             return {
                 user: activeSlot.attributes.non_bacana_user_chance,
                 bacana: activeSlot.attributes.bacana_user_chance,
@@ -512,6 +522,37 @@ export const Slot = ({
 
     return (
         <FullScreen handle={fsHandle}>
+            {numberOfPlays && (
+                <div
+                    style={{
+                        position: 'fixed',
+                        top: '58%',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        zIndex: '99999',
+                        display: 'flex',
+                        gap: '2.5rem',
+                    }}
+                >
+                    {Array.from({ length: 5 }).map((_, index) => {
+                        const usedPlays = 5 - numberOfPlays;
+                        const isUsed = index < usedPlays;
+
+                        return (
+                            <div
+                                key={index}
+                                style={{
+                                    width: '3rem',
+                                    height: '3rem',
+                                    borderRadius: '50%',
+                                    backgroundColor: 'white',
+                                    opacity: isUsed ? 1 : 0.5,
+                                }}
+                            />
+                        );
+                    })}
+                </div>
+            )}
             {((disabled.current && !rolling) || showPrize) &&
                 !gameOver.current && (
                     <div
@@ -519,8 +560,9 @@ export const Slot = ({
                             zIndex: '1',
                             opacity: '90%',
                             top: '18vh',
+                            borderRadius: '28px',
                             marginTop: '5px',
-                            backgroundColor: '#232323',
+                            backgroundColor: '#000000',
                             width: '90%',
                             left: '50%',
                             transform: 'translateX(-50%)',
@@ -567,9 +609,8 @@ export const Slot = ({
                                 className={showPrize ? '' : 'hide'}
                                 style={{ position: 'absolute', zIndex: 9999 }}
                             >
-                                <BlinkingBorderLights
-                                    style={{ position: 'absolute' }}
-                                ></BlinkingBorderLights>
+                                <img src={ganhaste}></img>
+
                                 <div
                                     style={{
                                         position: 'absolute',
@@ -579,7 +620,7 @@ export const Slot = ({
                                     <p
                                         className="title"
                                         style={{
-                                            fontSize: '4rem',
+                                            fontSize: '5rem',
                                             color: 'white',
                                             marginTop: '0rem',
                                         }}
@@ -588,9 +629,9 @@ export const Slot = ({
                                     </p>
                                     <p
                                         style={{
-                                            fontSize: '6rem',
-                                            color: '#232323',
-                                            marginTop: '-4rem',
+                                            fontSize: '8rem',
+                                            color: 'white',
+                                            marginTop: '-3rem',
                                         }}
                                     >
                                         {
@@ -696,7 +737,7 @@ const Container = styled.main`
         }
 
         ul {
-            margin-top: 8vh;
+            margin-top: 0vh;
             list-style: none;
             li {
                 text-align: center;
