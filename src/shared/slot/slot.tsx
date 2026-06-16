@@ -526,12 +526,12 @@ export const Slot = ({
                 <div
                     style={{
                         position: 'fixed',
-                        top: '57%',
+                        top: '57.5%',
                         left: '50%',
                         transform: 'translateX(-50%)',
                         zIndex: '99999',
                         display: 'flex',
-                        gap: '2.5rem',
+                        gap: '1.5rem',
                     }}
                 >
                     {Array.from({ length: 5 }).map((_, index) => {
