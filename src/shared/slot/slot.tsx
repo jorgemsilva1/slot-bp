@@ -526,7 +526,7 @@ export const Slot = ({
                 <div
                     style={{
                         position: 'fixed',
-                        top: '58%',
+                        top: '57%',
                         left: '50%',
                         transform: 'translateX(-50%)',
                         zIndex: '99999',
@@ -542,8 +542,8 @@ export const Slot = ({
                             <div
                                 key={index}
                                 style={{
-                                    width: '3rem',
-                                    height: '3rem',
+                                    width: '2rem',
+                                    height: '2rem',
                                     borderRadius: '50%',
                                     backgroundColor: 'white',
                                     opacity: isUsed ? 1 : 0.5,
