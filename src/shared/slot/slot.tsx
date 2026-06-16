@@ -175,12 +175,23 @@ export const Slot = ({
 
         const winningSymbolIndex = probability ? item?.index : null;
 
+        const reelElements = reelsRef.current.filter((el) => Boolean(el));
+
+        let perReelChosen: number[];
+        if (winningSymbolIndex != null) {
+            perReelChosen = reelElements.map(() => winningSymbolIndex);
+        } else {
+            perReelChosen = reelElements.map(() =>
+                Math.round(Math.random() * config.icon_num) % config.icon_num
+            );
+            if (perReelChosen.every((i) => i === perReelChosen[0])) {
+                perReelChosen[perReelChosen.length - 1] =
+                    (perReelChosen[0] + 1) % config.icon_num;
+            }
+        }
+
         const deltas = await Promise.all(
-            reelsRef.current
-                .filter((el) => Boolean(el))
-                .map((reel, index) => {
-                    return roll(reel, index, winningSymbolIndex);
-                })
+            reelElements.map((reel, index) => roll(reel, index, perReelChosen[index]))
         );
 
         myArr.current = [
