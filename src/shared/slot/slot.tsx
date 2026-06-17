@@ -558,7 +558,7 @@ export const Slot = ({
                     <div
                         style={{
                             zIndex: '1',
-                            opacity: '90%',
+                            opacity: '75%',
                             top: '18vh',
                             borderRadius: '28px',
                             marginTop: '5px',
