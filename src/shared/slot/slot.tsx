@@ -522,37 +522,6 @@ export const Slot = ({
 
     return (
         <FullScreen handle={fsHandle}>
-            {numberOfPlays && !gameOver.current && (
-                <div
-                    style={{
-                        position: 'fixed',
-                        top: '57.5%',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
-                        zIndex: '99999',
-                        display: 'flex',
-                        gap: '1.5rem',
-                    }}
-                >
-                    {Array.from({ length: 5 }).map((_, index) => {
-                        const usedPlays = 5 - numberOfPlays;
-                        const isUsed = index < usedPlays;
-
-                        return (
-                            <div
-                                key={index}
-                                style={{
-                                    width: '2rem',
-                                    height: '2rem',
-                                    borderRadius: '50%',
-                                    backgroundColor: 'white',
-                                    opacity: isUsed ? 1 : 0.5,
-                                }}
-                            />
-                        );
-                    })}
-                </div>
-            )}
             {((disabled.current && !rolling) || showPrize) &&
                 !gameOver.current && (
                     <div

@@ -38,7 +38,7 @@ const Container = styled.section`
     display: flex;
     column-gap: 24px;
     position: absolute;
-    bottom: calc(150px + 2vh);
+    bottom: calc(50px + 2vh);
     left: 50%;
     transform: translateX(-50%);
 `;
