@@ -522,7 +522,7 @@ export const Slot = ({
 
     return (
         <FullScreen handle={fsHandle}>
-            {numberOfPlays && !gameOver.current && (
+            {(numberOfPlays ?? 0) > 0 && !gameOver.current && (
                 <div
                     style={{
                         position: 'fixed',
