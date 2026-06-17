@@ -43,7 +43,7 @@ export function App() {
     const [slotConfig] = useState<SlotConfigType>({
         icon_width: 450 /** 5*/,
         icon_height: 450 /** 5*/,
-        icon_num: 8,
+        icon_num: 10,
         time_per_icon: 65,
         indexes: [0, 0, 0],
         theme: 'soccer',
@@ -77,8 +77,8 @@ export function App() {
                     award.attributes.multiplier === 'Double'
                         ? 0.5
                         : award.attributes.multiplier === 'Triple'
-                        ? 0.33
-                        : 1,
+                          ? 0.33
+                          : 1,
             }));
 
         const rewards = mapAwards(activeSlot.attributes.awards.data);
@@ -132,14 +132,14 @@ export function App() {
                 config.user_type || isBacana === undefined
                     ? undefined
                     : isBacana
-                    ? 'bacana'
-                    : 'regular';
+                      ? 'bacana'
+                      : 'regular';
             const numOfPlays =
                 (config.user_type || isBacana) === undefined
                     ? null
                     : config.user_type === 'bacana' || isBacana
-                    ? 5
-                    : 5;
+                      ? 5
+                      : 5;
 
             if (!config.user_type && !config.num_of_plays)
                 dispatch(setInitialStateData(userType, numOfPlays, 100));
