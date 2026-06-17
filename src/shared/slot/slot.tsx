@@ -531,6 +531,7 @@ export const Slot = ({
                         transform: 'translateX(-50%)',
                         zIndex: '99999',
                         display: 'flex',
+                        alignItems: 'center',
                         gap: '1.5rem',
                     }}
                 >
@@ -542,8 +543,8 @@ export const Slot = ({
                             <div
                                 key={index}
                                 style={{
-                                    width: isUsed ? '3rem' : '2rem',
-                                    height: isUsed ? '3rem' : '2rem',
+                                    width: isUsed ? '3rem' : '1.5rem',
+                                    height: isUsed ? '3rem' : '1.5rem',
                                     borderRadius: '50%',
                                     backgroundColor: 'white',
                                     opacity: isUsed ? 1 : 0.5,
