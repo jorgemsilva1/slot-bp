@@ -542,8 +542,8 @@ export const Slot = ({
                             <div
                                 key={index}
                                 style={{
-                                    width: '2rem',
-                                    height: '2rem',
+                                    width: isUsed ? '2rem' : '1rem',
+                                    height: isUsed ? '2rem' : '1rem',
                                     borderRadius: '50%',
                                     backgroundColor: 'white',
                                     opacity: isUsed ? 1 : 0.5,
