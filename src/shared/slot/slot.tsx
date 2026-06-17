@@ -543,8 +543,14 @@ export const Slot = ({
                             <div
                                 key={index}
                                 style={{
-                                    width: isUsed ? '3rem' : '1.5rem',
-                                    height: isUsed ? '3rem' : '1.5rem',
+                                    width:
+                                        index === usedPlays
+                                            ? '2.4rem'
+                                            : '1.5rem',
+                                    height:
+                                        index === usedPlays
+                                            ? '2.4rem'
+                                            : '1.5rem',
                                     borderRadius: '50%',
                                     backgroundColor: 'white',
                                     opacity: isUsed ? 1 : 0.5,
