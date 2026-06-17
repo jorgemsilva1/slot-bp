@@ -13,7 +13,7 @@ export const PrizeList = ({ arr }: { arr: any[] }) => {
                         marginLeft: '0px',
                     }}
                 >
-                    Prémios:
+                    Prémios
                 </li>
                 {arr.map((item, index) => (
                     <li
