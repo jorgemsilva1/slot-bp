@@ -1,6 +1,5 @@
 import PlayBtn from '../../../assets/svg/play-btn.png';
 import BtnBg from '../../../assets/svg/btn_bg.svg';
-import BtnBgBlack from '../../../assets/svg/btn_bg_black.svg';
 import UserBacanaBtn from '../../../assets/svg/btn-user-bp.svg';
 import NonUserBacanaBtn from '../../../assets/svg/btn-user-non-bp.svg';
 import styled from 'styled-components';
@@ -19,67 +18,125 @@ export const BtnToggle = ({
     return (
         <BtnWrapper>
             {!clickedPlay ? (
-                <div onClick={handleClickPlay} style={{ width: '100%', position: 'relative', marginTop: '-10vh', left: '30vw' }}>
-                        <img src={BtnBg} alt="btn" style={{position: 'absolute', zIndex: 2}}/>
-                        <img src={BtnBgBlack} alt="btn" style={{position: 'absolute', left: '20px', top: '20px'}}/>
-                        <div style={{position: 'absolute', zIndex: 9, color: 'white', fontSize: '8rem', left: '14%', marginTop: '4%', fontFamily: "Futura", fontWeight: 800}}>PLAY</div>
-                </div>
-            ) : clickedPlay && typeof numberOfPlays !== 'number' ? (
-                <div style={{width: '100%'}}>
-                    <div onClick={() => handleClickUserType(true)}
-                         style={{ width: '100%', position: 'relative', marginTop: '-10vh', left: '30vw' }}>
-                        <img src={BtnBg} alt="btn" style={{ position: 'absolute', zIndex: 2 }} />
-                        <img src={BtnBgBlack} alt="btn" style={{ position: 'absolute', left: '20px', top: '20px' }} />
-                        <div style={{
+                <div
+                    onClick={handleClickPlay}
+                    style={{
+                        width: '100%',
+                        position: 'relative',
+                        marginTop: '-10vh',
+                        left: '30vw',
+                    }}
+                >
+                    <img
+                        src={BtnBg}
+                        alt="btn"
+                        style={{ position: 'absolute', zIndex: 2 }}
+                    />
+                    <div
+                        style={{
                             position: 'absolute',
-                            textAlign: 'center',
                             zIndex: 9,
                             color: 'white',
-                            marginLeft: '8%',
-                            marginTop: '3%',
-                            fontSize: '6rem'
-                        }}>
-                            <div style={{
-                                fontFamily: "Futura",
-                                fontWeight: 800,
-                                textTransform: 'uppercase'
-                            }}>Utilizador
+                            fontSize: '8rem',
+                            left: '14%',
+                            marginTop: '4%',
+                            fontFamily: 'Futura',
+                            fontWeight: 800,
+                        }}
+                    >
+                        PLAY
+                    </div>
+                </div>
+            ) : clickedPlay && typeof numberOfPlays !== 'number' ? (
+                <div style={{ width: '100%' }}>
+                    <div
+                        onClick={() => handleClickUserType(true)}
+                        style={{
+                            width: '100%',
+                            position: 'relative',
+                            marginTop: '-10vh',
+                            left: '30vw',
+                        }}
+                    >
+                        <img
+                            src={BtnBg}
+                            alt="btn"
+                            style={{ position: 'absolute', zIndex: 2 }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                textAlign: 'center',
+                                zIndex: 9,
+                                color: 'white',
+                                marginLeft: '8%',
+                                marginTop: '3%',
+                                fontSize: '6rem',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontFamily: 'Futura',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                Utilizador
                             </div>
-                            <div style={{
-                                fontFamily: 'FuturaBold',
-                                fontWeight: 600,
-                                marginTop: '-40px',
-                                fontSize: '5rem'
-                            }}>
+                            <div
+                                style={{
+                                    fontFamily: 'FuturaBold',
+                                    fontWeight: 600,
+                                    marginTop: '-40px',
+                                    fontSize: '5rem',
+                                }}
+                            >
                                 BacanaPlay
                             </div>
                         </div>
                     </div>
-                    <div onClick={() => handleClickUserType(false)}
-                         style={{ width: '100%', position: 'relative', marginTop: '11vh', left: '30vw' }}>
-                        <img src={BtnBg} alt="btn" style={{ position: 'absolute', zIndex: 2 }} />
-                        <img src={BtnBgBlack} alt="btn" style={{ position: 'absolute', left: '20px', top: '20px' }} />
-                        <div style={{
-                            position: 'absolute',
-                            textAlign: 'center',
-                            zIndex: 9,
-                            color: 'white',
-                            marginLeft: '3%',
-                            marginTop: '3%',
-                            fontSize: '6rem'
-                        }}>
-                            <div style={{
-                                fontFamily: "Futura",
-                                fontWeight: 800,
-                                textTransform: 'uppercase'
-                            }}>Não Utilizador
+                    <div
+                        onClick={() => handleClickUserType(false)}
+                        style={{
+                            width: '100%',
+                            position: 'relative',
+                            marginTop: '11vh',
+                            left: '30vw',
+                        }}
+                    >
+                        <img
+                            src={BtnBg}
+                            alt="btn"
+                            style={{ position: 'absolute', zIndex: 2 }}
+                        />
+                        <div
+                            style={{
+                                position: 'absolute',
+                                textAlign: 'center',
+                                zIndex: 9,
+                                color: 'white',
+                                marginLeft: '3%',
+                                marginTop: '3%',
+                                fontSize: '6rem',
+                            }}
+                        >
+                            <div
+                                style={{
+                                    fontFamily: 'Futura',
+                                    fontWeight: 800,
+                                    textTransform: 'uppercase',
+                                }}
+                            >
+                                Não Utilizador
                             </div>
-                            <div style={{
-                                fontFamily: 'FuturaBold',
-                                fontWeight: 600,
-                                marginTop: '-40px',
-                                fontSize: '5rem'
-                            }}>
+                            <div
+                                style={{
+                                    fontFamily: 'FuturaBold',
+                                    fontWeight: 600,
+                                    marginTop: '-40px',
+                                    fontSize: '5rem',
+                                }}
+                            >
                                 BacanaPlay
                             </div>
                         </div>

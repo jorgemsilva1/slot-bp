@@ -522,7 +522,7 @@ export const Slot = ({
 
     return (
         <FullScreen handle={fsHandle}>
-            {numberOfPlays && (
+            {numberOfPlays && !gameOver.current && (
                 <div
                     style={{
                         position: 'fixed',
@@ -632,6 +632,9 @@ export const Slot = ({
                                             fontSize: '8rem',
                                             color: 'white',
                                             marginTop: '-3rem',
+                                            width: 'max-content',
+                                            marginLeft: 'auto',
+                                            marginRight: 'auto',
                                         }}
                                     >
                                         {
