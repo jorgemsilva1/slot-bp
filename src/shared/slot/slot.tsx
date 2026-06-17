@@ -537,7 +537,7 @@ export const Slot = ({
                 >
                     {Array.from({ length: 5 }).map((_, index) => {
                         const usedPlays = 5 - numberOfPlays;
-                        const isUsed = index < usedPlays;
+                        const isUsed = index <= usedPlays;
 
                         return (
                             <div
