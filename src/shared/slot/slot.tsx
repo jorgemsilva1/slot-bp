@@ -630,6 +630,8 @@ export const Slot = ({
                                             fontSize: '5rem',
                                             color: 'white',
                                             marginTop: '0rem',
+                                            marginLeft: 'auto',
+                                            marginRight: 'auto',
                                         }}
                                     >
                                         Ganhaste
@@ -638,10 +640,12 @@ export const Slot = ({
                                         style={{
                                             fontSize: '8rem',
                                             color: 'white',
-                                            marginTop: '-3rem',
+                                            marginTop: '-1rem',
                                             width: 'max-content',
+                                            lineHeight: '1',
                                             marginLeft: 'auto',
                                             marginRight: 'auto',
+                                            maxWidth: '1023px',
                                         }}
                                     >
                                         {
